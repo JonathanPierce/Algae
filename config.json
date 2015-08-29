@@ -1,0 +1,57 @@
+{
+	"corpusPath": "/path/to/corpus",
+	"jobs": [
+		{
+			"name": "Near Identical File",
+			"assignments": [
+				{
+					"name": "mp2"
+				}
+			],
+			"preprocessors": [
+				{
+					"name": "NearIdentical"
+				}
+			],
+			"processor": {
+				"name": "NearIdentical"
+			},
+			"postprocessors": []
+		},
+		{
+			"name": "Token Edit Distance",
+			"assignments": [
+				{
+					"name": "mp2"
+				}
+			],
+			"preprocessors": [
+				{
+					"job": "Near Identical File",
+					"preprocessor": "NearIdentical"
+				},
+				{
+					"name": "Tokenizer",
+					"args": {
+						"number": 255
+					}
+				}
+			],
+			"processor": {
+				"name": "TED",
+				"args": [1, 2, 3, 4]
+			},
+			"postprocessors": [
+				{
+					"name": "Testing"
+				},
+				{
+					"name": "Testing2",
+					"args": {
+						"derp": "deder"
+					}
+				}
+			]
+		}
+	]
+}
