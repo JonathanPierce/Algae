@@ -28,7 +28,7 @@
 			"preprocessors": [
 				{
 					"job": "Near Identical File",
-					"preprocessor": "NearIdentical"
+					"name": "NearIdentical"
 				},
 				{
 					"name": "Tokenizer",

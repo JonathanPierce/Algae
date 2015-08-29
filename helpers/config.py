@@ -11,11 +11,10 @@ class Assignment:
 class Preprocessor:
 	def __init__(self, preprocessor):
 		self.isReference = preprocessor.has_key('job')
+		self.name = preprocessor['name']
 		if self.isReference:
 			self.job = preprocessor['job']
-			self.preprocessor = preprocessor['preprocessor']
 		else:
-			self.name = preprocessor['name']
 			if preprocessor.has_key('args'):
 				self.args = preprocessor['args']
 			else:

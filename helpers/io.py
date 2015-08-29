@@ -35,11 +35,8 @@ def writeFile(text, filename):
 	handle.close()
 	
 def readJSON(filename):
-	try:
-		filetext = readFile(filename)
-		return json.loads(filetext)
-	except:
-		printErrorAndExit('File {} is invalid JSON'.format(filename))
+	filetext = readFile(filename)
+	return json.loads(filetext)
 		
 def writeJSON(data, filename):
 	try:

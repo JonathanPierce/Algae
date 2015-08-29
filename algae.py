@@ -1,5 +1,6 @@
 import helpers.io as io
 from helpers.config import Config
+from helpers.progress import Progress
 
 if __name__ == "__main__":
 	io.printLine()
@@ -13,6 +14,7 @@ if __name__ == "__main__":
 	
 	# import the progress
 	io.printRaw('importing progress... ')
+	progress = Progress()
 	print "done!"
 	
 	# check program arguments, generate jobs
