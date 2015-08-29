@@ -1,3 +1,5 @@
+# handles management of the progress.json file
+
 import io
 
 class Progress:
