@@ -22,7 +22,14 @@
 					"message": "Main processor."
 				}
 			},
-			"postprocessors": []
+			"postprocessors": [
+				{
+					"name": "test",
+					"args": {
+						"message": "First postprocessor."
+					}
+				}
+			]
 		},
 		{
 			"name": "Reference",
@@ -49,7 +56,14 @@
 					"message": "Reference processor."
 				}
 			},
-			"postprocessors": []
+			"postprocessors": [
+				{
+					"name": "test",
+					"args": {
+						"message": "Final postprocessor."
+					}
+				}
+			]
 		}
 	]
 }

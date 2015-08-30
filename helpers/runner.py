@@ -77,8 +77,8 @@ class Runner:
 		# run each stage from args (checking/updating progress)
 		return None
 		
-	def shouldPreprocess(self, job, name):
-		if "force" in self.args.options:
+	def shouldPreprocess(self, job, name, isReference):
+		if "force" in self.args.options and not isReference:
 			return True
 		return self.progress.queryPreprogress(job, name) == False
 		
@@ -102,12 +102,13 @@ class Runner:
 			
 			# if we are a reference, get what we are referencing to
 			jobName = job.name
+			isReference = pre.isReference
 			if pre.isReference:
 				jobName = pre.job
 				pre = getPreprocessorReference(self.config, pre.job, pre.name)
 			
 			# see if it has already ran
-			if self.shouldPreprocess(jobName, pre.name):
+			if self.shouldPreprocess(jobName, pre.name, isReference):
 				# we need to run, first gather arguments
 				students = self.corpus.students
 				assignments = job.assignments
@@ -141,7 +142,80 @@ class Runner:
 		return success
 		
 	def runProcess(self, job):
-		return True
+		success = True
+		processor = job.processor
+		
+		# print the name
+		io.printIndented("running processor '{}'...".format(processor.name), 1)
+		
+		# see if it has already ran
+		if self.shouldProcess(job.name):
+			# we need to run, first gather arguments
+			students = self.corpus.students
+			assignments = job.assignments
+			args = processor.args
+			helpers = ProcessorHelpers(self.corpus)
+			
+			# try to import the correct module
+			try:
+				module = importlib.import_module('processors.' + processor.name)
+				
+				# run it
+				print ""
+				success = module.run(students, assignments, args, helpers)
+				
+				# update progress
+				self.progress.updateProgress(job.name, success)
+			except:
+				io.printIndented("module '{}' not found or encountered an error.\n".format(processor.name), 1)
+				success = False
+				
+			if success:
+				io.printIndented('complete!\n', 1)
+		else:
+			# don't need to run
+			io.printRaw(' already done!\n')
+		
+		return success
 		
 	def runPostprocess(self, job):
-		return True
+		success = True
+	
+		# for each preprocessor
+		for post in job.postprocessors:
+			# print the name
+			io.printIndented("running postprocessor '{}'...".format(post.name), 1)
+			
+			# see if it has already ran
+			if self.shouldPostprocess(job.name, post.name):
+				# we need to run, first gather arguments
+				students = self.corpus.students
+				assignments = job.assignments
+				args = post.args
+				helpers = PostprocessorHelpers(self.corpus)
+				
+				# try to import the correct module
+				try:
+					module = importlib.import_module('postprocessors.' + post.name)
+					
+					# run it
+					print ""
+					success = module.run(students, assignments, args, helpers)
+					
+					# update progress
+					self.progress.updatePostprogress(job.name, post.name, success)
+				except:
+					io.printIndented("module '{}' not found or encountered an error.\n".format(post.name), 1)
+					success = False
+					
+				if success:
+					io.printIndented('complete!\n', 1)
+				else:
+					# fail out
+					break
+			else:
+				# don't need to run
+				io.printRaw(' already done!\n')
+		
+		# return true iff all were sucessful
+		return success
