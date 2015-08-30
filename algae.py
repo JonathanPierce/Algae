@@ -2,6 +2,7 @@ import helpers.io as io
 from helpers.config import Config
 from helpers.progress import Progress
 from helpers.args import Args
+from helpers.corpus import Corpus
 
 if __name__ == "__main__":
 	io.printLine()
@@ -21,13 +22,11 @@ if __name__ == "__main__":
 	# check program arguments, generate jobs
 	io.printRaw('checking arugments... ')
 	args = Args(config)
-	print "\nmode:", args.mode
-	print "jobs:", args.jobs
-	print "options:", args.options
 	print "done!"
 	
 	# check the corpus
 	io.printRaw('checking corpus... ')
+	corpus = Corpus(config)
 	print "done!"
 	io.printLine()
 	

@@ -57,6 +57,10 @@ class Config:
 			self.rawJSON = io.readJSON('config.json')
 			self.corpusPath = self.rawJSON['corpusPath']
 			
+			# Make sure corpus path ends in '/'
+			if self.corpusPath[-1] != '/':
+				self.corpusPath = self.corpusPath + "/"
+			
 			# Process the jobs
 			self.jobs = []
 			for job in self.rawJSON['jobs']:

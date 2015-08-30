@@ -1,5 +1,5 @@
 {
-	"corpusPath": "/path/to/corpus",
+	"corpusPath": "../testCorpus",
 	"jobs": [
 		{
 			"name": "Near Identical File",
