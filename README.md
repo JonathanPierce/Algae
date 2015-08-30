@@ -1,5 +1,109 @@
 # Algae
 
-A platform for running code plagiarism (cheating) detection software on large datasets
+A platform for running code plagiarism (cheating) detection software on large datasets.
 
-Development in progress. Documentation to come.
+## Using Algae
+
+1. Clone the algae repo.
+2. Set up a corpus. See the section below.
+3. Set up your detectors and configuration file.
+
+Then, run algae as follows from your algae folder:
+
+```
+python algae.py [mode] [jobs] [options]
+```
+
+### Mode
+- “all” - default if none specified - Runs the preprocessors, processor, and postprocessors in order.
+- “preprocess|process|postprocess” - Runs only the specified lifecycle event. Using these automatically applies the ‘-force’ option.
+
+### Jobs
+- none specified - Runs all jobs from configuration
+- one or more job names specified - Runs all jobs found in the configuration.
+
+### Options
+- --force - If present, ignores progress.json and will re-run all job steps.
+Typically only used with mode ‘all’
+
+## Algae Folder Layout
+
+- preprocessors
+	- Your iles related to each preprocessor go here.
+	- Each preprocessor can be comprised of any number of files or subfolders, and must have a unique Python entry point here.
+- processors
+	- Your files related to each processor go here
+	- Each processor can be comprised of any number of files or subfolders, and must have a unique Python entry point here.
+- postprocessors
+	- Your files related to each postprocessor go here.
+	- Each postprocessor can be comprised of any number of files or subfolders, and must have a unique Python entry point here.
+- helpers
+	- Algae submodules. Do not modify.
+- algae.py (the main program)
+- config.json (the Algae configuration file)
+- progress.json (will be automatically created)
+
+## Corpus Folder Layout
+The corpus is the set of students/assignment you want to run cheating detection on. It is also where Algae will store its results.
+
+- path/to/corpus
+	- [student 1 id]
+		- [assignment 1 id]
+			- Code files and folders go here.
+			- \_\_algae\_\_ (folder will be automatically created)
+				- Preprocessor output goes here.
+		- ... (more assignments)
+	- ... (more students)
+	- \_\_algae\_\_ (folder will be automatically created)
+		- processed
+			- [assignment 1 id]
+				- Processor results go here.
+		- postprocessed
+			- [assignment 1 id]
+				- Postprocessor results go here.	
+	- students.txt (a list of student ids, one per line)
+
+## Configuration File
+The configuration file (config.json) is the main driver of algae. It should be formatted as follows:
+
+- root (object)
+	- corpusPath (string): Path to the corpus
+	- jobs (array):
+		- For each (object):
+			- name (string): The name of the job
+			- assignments (array):
+				- For each (object):
+					- name (string): assignmentId
+					- args (object - optional): args for this assignment
+			- preprocessor (array - can be empty):
+				- For each (object):
+					- Either:
+						- name (string): Name of the preprocessor to use (should correspond to name of entry point python file)
+						- args (object - optional): Args that will be passed into the preprocessor.
+					- Or:
+						- job (string): Name of another job.
+						- name (string): The name of the preprocessor from that job we should run (if it hasn’t already)
+			- processor (object - required):
+				- name (string): Same as above.
+				- args (object - optional): Same as above.
+			- postprocessor (array - can be empty):
+				- For each (object):
+					- name (string): Same as above.
+					- args (object - optional): Same as above.
+					
+See the config.json provided for an example.
+
+## Progress File
+This file will be automatically created/managed and is used to ensure that processors (which can take on the order of days to run in some cases) only run if they haven't already. This way, one can adjust the parameters of a postprocessor and run Algae again without also having to rerun the processor. Using the --force option will override this.
+
+## Processor API
+Algae is designed to be extended with new processors.
+
+A preprocessor/processor/postprocessor is a python program containing a function named “run” (and stored in the proper folder) that takes the following arguments:
+
+- students - an array of all student ids
+- assignments - the array of assignment that this processor should check
+- args - args to the preprocessor/processor/postprocessor (passed in from config)
+- helpers - a set of handy helper functions (see implimention in helpers/runner.py)
+
+Processors should return True on success and False on failure.
