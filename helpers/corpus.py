@@ -35,10 +35,12 @@ class Corpus:
 		return io.readFile(path)
 		
 	def readFromProcessed(self, assignment, filename):
+		# will cause error if file does not exist
 		path = self.config.corpusPath + '__algae__/processed/' + assignment + '/' + filename
 		return io.readFile(path)
 		
 	def readFromPostprocessed(self, assignment, filename):
+		# will cause error if file does not exist
 		path = self.config.corpusPath + '__algae__/postprocessed/' + assignment + '/' + filename
 		return io.readFile(path)
 		

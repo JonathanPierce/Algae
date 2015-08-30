@@ -2,56 +2,54 @@
 	"corpusPath": "../testCorpus",
 	"jobs": [
 		{
-			"name": "Near Identical File",
+			"name": "Main",
 			"assignments": [
 				{
-					"name": "mp2"
+					"name": "assignment1"
 				}
 			],
 			"preprocessors": [
 				{
-					"name": "NearIdentical"
+					"name": "test",
+					"args": {
+						"message": "This preprocessor should only run once."
+					}
 				}
 			],
 			"processor": {
-				"name": "NearIdentical"
+				"name": "test",
+				"args": {
+					"message": "Main processor."
+				}
 			},
 			"postprocessors": []
 		},
 		{
-			"name": "Token Edit Distance",
+			"name": "Reference",
 			"assignments": [
 				{
-					"name": "mp2"
+					"name": "assignment1"
 				}
 			],
 			"preprocessors": [
 				{
-					"job": "Near Identical File",
-					"name": "NearIdentical"
+					"job": "Main",
+					"name": "test"
 				},
 				{
-					"name": "Tokenizer",
+					"name": "test",
 					"args": {
-						"number": 255
+						"message": "You should see this message."
 					}
 				}
 			],
 			"processor": {
-				"name": "TED",
-				"args": [1, 2, 3, 4]
-			},
-			"postprocessors": [
-				{
-					"name": "Testing"
-				},
-				{
-					"name": "Testing2",
-					"args": {
-						"derp": "deder"
-					}
+				"name": "test",
+				"args": {
+					"message": "Reference processor."
 				}
-			]
+			},
+			"postprocessors": []
 		}
 	]
 }

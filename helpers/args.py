@@ -1,5 +1,6 @@
 # interprets program args correctly
 import sys
+import io
 
 class Args:
 	def __init__(self, config):
@@ -30,6 +31,11 @@ class Args:
 						
 				if found == False and arg.lower() in ["--force"]:
 					self.options.append(arg[2:].lower())
+					found = True
+					
+				if found == False:
+					# job not found or option invalid
+					io.printErrorAndExit('Invalid job name or option specified as argument.')
 					
 		# no jobs? Add them all.
 		if len(self.jobs) == 0:

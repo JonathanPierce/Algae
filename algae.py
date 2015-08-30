@@ -3,6 +3,7 @@ from helpers.config import Config
 from helpers.progress import Progress
 from helpers.args import Args
 from helpers.corpus import Corpus
+from helpers.runner import Runner
 
 if __name__ == "__main__":
 	io.printLine()
@@ -32,6 +33,8 @@ if __name__ == "__main__":
 	
 	# run the jobs
 	print "running jobs:\n"
+	runner = Runner(config, progress, args, corpus)
+	runner.run()
 	
 	# all done!
 	io.printLine()

@@ -10,7 +10,7 @@ def printLine():
 	print ""
 	
 def printIndented(text, indent):
-	print ('\t' * indent) + text
+	printRaw((' ' * (4 * indent)) + '- ' + text)
 	
 def createIndentedPrinter(indent):
 	def printFun(text):
