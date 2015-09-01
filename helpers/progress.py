@@ -3,15 +3,16 @@
 import io
 
 class Progress:
-	def __init__(self):
+	def __init__(self, configFile):
 		# attempt to read an existing progress file
+		self.fileName = "progress_" + configFile
 		try:
-			self.data = io.readJSON("progress.json")
+			self.data = io.readJSON(self.fileName)
 		except:
 			self.data = {}
 			
 	def flushJSON(self):
-		io.writeJSON(self.data, "progress.json")
+		io.writeJSON(self.data, self.fileName)
 			
 	def queryPreprogress(self, job, name):
 		if self.data.has_key(job):

@@ -2,6 +2,22 @@
 import sys
 import io
 
+def getConfigFile():
+	args = sys.argv
+	for i in range(len(args) - 1):
+		arg = args[i]
+		if arg.lower() == "--config":
+			# remove from args array
+			new = args[:i]
+			if i + 2 < len(args):
+				new += args[(i+2):]
+			
+			sys.argv = new
+			
+			# return this
+			return args[i + 1]
+	return "config.json"
+
 class Args:
 	def __init__(self, config):
 		self.mode = "all"

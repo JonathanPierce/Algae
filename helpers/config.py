@@ -15,6 +15,7 @@ class Preprocessor:
 		if self.isReference:
 			self.job = preprocessor['job']
 		else:
+			self.runThisRound = False # needed for --force to work correctly
 			if preprocessor.has_key('args'):
 				self.args = preprocessor['args']
 			else:
@@ -51,10 +52,10 @@ class Job:
 
 # main entry point
 class Config:
-	def __init__(self):
+	def __init__(self, configFile):
 		try:
 			# Read the JSON, set basic attributes
-			self.rawJSON = io.readJSON('config.json')
+			self.rawJSON = io.readJSON(configFile)
 			self.corpusPath = self.rawJSON['corpusPath']
 			
 			# Make sure corpus path ends in '/'

@@ -2,6 +2,7 @@ import helpers.io as io
 from helpers.config import Config
 from helpers.progress import Progress
 from helpers.args import Args
+from helpers.args import getConfigFile
 from helpers.corpus import Corpus
 from helpers.runner import Runner
 
@@ -12,12 +13,13 @@ if __name__ == "__main__":
 	
 	# import the config
 	io.printRaw('importing configuration... ')
-	config = Config()
+	configFile = getConfigFile()
+	config = Config(configFile)
 	print "done!"
 	
 	# import the progress
 	io.printRaw('importing progress... ')
-	progress = Progress()
+	progress = Progress(configFile)
 	print "done!"
 	
 	# check program arguments, generate jobs

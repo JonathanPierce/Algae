@@ -77,8 +77,10 @@ class Runner:
 		# run each stage from args (checking/updating progress)
 		return None
 		
-	def shouldPreprocess(self, job, name, isReference):
-		if "force" in self.args.options and not isReference:
+	def shouldPreprocess(self, job, name, runThisRound):
+		if runThisRound:
+			return False
+		if "force" in self.args.options:
 			return True
 		return self.progress.queryPreprogress(job, name) == False
 		
@@ -102,13 +104,12 @@ class Runner:
 			
 			# if we are a reference, get what we are referencing to
 			jobName = job.name
-			isReference = pre.isReference
 			if pre.isReference:
 				jobName = pre.job
 				pre = getPreprocessorReference(self.config, pre.job, pre.name)
 			
 			# see if it has already ran
-			if self.shouldPreprocess(jobName, pre.name, isReference):
+			if self.shouldPreprocess(jobName, pre.name, pre.runThisRound):
 				# we need to run, first gather arguments
 				students = self.corpus.students
 				assignments = job.assignments
@@ -125,6 +126,7 @@ class Runner:
 					
 					# update progress
 					self.progress.updatePreprogress(job.name, pre.name, success)
+					pre.runThisRound = success
 				except:
 					io.printIndented("module '{}' not found or encountered an error.\n".format(pre.name), 1)
 					success = False

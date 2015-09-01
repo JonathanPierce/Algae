@@ -25,6 +25,7 @@ python algae.py [mode] [jobs] [options]
 ### Options
 - --force - If present, ignores progress.json and will re-run all job steps.
 Typically only used with mode ‘all’
+- --config [filename] - Will use [filename] as the config instead of config.json.
 
 ## Algae Folder Layout
 
@@ -75,7 +76,7 @@ The configuration file (config.json) is the main driver of algae. It should be f
 				- For each (object):
 					- name (string): assignmentId
 					- args (object - optional): args for this assignment
-			- preprocessor (array - can be empty):
+			- preprocessors (array - can be empty):
 				- For each (object):
 					- Either:
 						- name (string): Name of the preprocessor to use (should correspond to name of entry point python file)
@@ -86,7 +87,7 @@ The configuration file (config.json) is the main driver of algae. It should be f
 			- processor (object - required):
 				- name (string): Same as above.
 				- args (object - optional): Same as above.
-			- postprocessor (array - can be empty):
+			- postprocessors (array - can be empty):
 				- For each (object):
 					- name (string): Same as above.
 					- args (object - optional): Same as above.
@@ -94,7 +95,7 @@ The configuration file (config.json) is the main driver of algae. It should be f
 See the config.json provided for an example.
 
 ## Progress File
-This file will be automatically created/managed and is used to ensure that processors (which can take on the order of days to run in some cases) only run if they haven't already. This way, one can adjust the parameters of a postprocessor and run Algae again without also having to rerun the processor. Using the --force option will override this.
+This file (progress_*.json) will be automatically created/managed and is used to ensure that processors (which can take on the order of days to run in some cases) only run if they haven't already. This way, one can adjust the parameters of a postprocessor and run Algae again without also having to rerun the processor. Using the --force option will override this.
 
 ## Processor API
 Algae is designed to be extended with new processors.
