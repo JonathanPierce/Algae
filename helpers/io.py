@@ -53,3 +53,6 @@ def writeJSON(data, filename):
 		writeFile(text, filename)
 	except:
 		printErrorAndExit('Data is not JSON serializable.')
+
+def getJSONString(data):
+	return json.dumps(data)

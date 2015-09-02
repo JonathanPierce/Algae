@@ -11,10 +11,10 @@ def getJobFromConfig(config, jobName):
 	return None
 
 def printError(text):
-	io.printLine()
 	io.printIndented(text, 1)
 	io.printLine()
 	traceback.print_exc()
+	io.printLine()
 
 def getPreprocessorReference(config, job, name):
 	job = getJobFromConfig(config, job)
@@ -35,6 +35,7 @@ class ProcessorHelpers:
 		self.readFromAssignment = corpus.readFromAssignment
 		self.readFromPreprocessed = corpus.readFromPreprocessed
 		self.writeToProcessed = corpus.writeToProcessed
+		self.writeToPostprocessed = corpus.writeToPostprocessed
 		self.printf = io.createIndentedPrinter(2)
 		
 class PostprocessorHelpers:
