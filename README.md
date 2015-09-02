@@ -26,6 +26,7 @@ python algae.py [mode] [jobs] [options]
 - --force - If present, ignores progress.json and will re-run all job steps.
 Typically only used with mode ‘all’
 - --config [filename] - Will use [filename] as the config instead of config.json.
+- --clean - Will PERMANENTLY delete all data from all __algae__ folders in the corpus, then run with --force.
 
 ## Algae Folder Layout
 

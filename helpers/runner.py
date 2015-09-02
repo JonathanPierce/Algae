@@ -60,6 +60,10 @@ class Runner:
 		args = self.args
 		config = self.config
 		
+		# clean up the corpus if necessary
+		if "clean" in args.options:
+			self.clean()
+
 		# for each job from args
 		for jobName in args.jobs:
 			# extract the job from the config
@@ -87,7 +91,29 @@ class Runner:
 			
 		# run each stage from args (checking/updating progress)
 		return None
-		
+	
+	def clean(self):
+		corpus = self.corpus
+		students = corpus.students
+		config = self.config
+
+		io.printRaw("Cleaning up corpus... ")
+
+		# clean the preprocessor
+		for job in config.jobs:
+			for assignment in job.assignments:
+				name = assignment.name
+
+				# clean up the preprocessor
+				for student in students:
+					corpus.cleanPreprocessed(student, name)
+
+				# clean the processor and postprocessor
+				corpus.cleanProcessed(name)
+				corpus.cleanPostprocessed(name)
+
+		print "done!\n"
+
 	def shouldPreprocess(self, job, name, runThisRound):
 		if runThisRound:
 			return False

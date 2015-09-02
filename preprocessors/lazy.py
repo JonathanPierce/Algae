@@ -17,13 +17,6 @@ def mangle(text, student, assignment, filename, helpers):
 	# write to preprocessed
 	helpers.writeToPreprocessed(text, student, assignment, filename + "lazy_processed.txt")
 
-	# return the text
-	return text
-
-def hash(text, student, assignment, filename, helpers):
-	hashText = sha256(text).hexdigest()
-	helpers.writeToPreprocessed(hashText, student, assignment, filename + "lazy_hash.txt")
-
 def run(students, assignments, args, helpers):
 	# for each assignment
 	for assign in assignments:
@@ -40,10 +33,7 @@ def run(students, assignments, args, helpers):
 					safeFilename = common.makeFilenameSafe(filename)
 
 					# mangle it, write the mangled text
-					mangledText = mangle(rawText, student, assign.name, safeFilename, helpers)
-
-					# write the hash
-					hash(mangledText, student, assign.name, safeFilename, helpers)
+					mangle(rawText, student, assign.name, safeFilename, helpers)
 
 	# all done
 	return True

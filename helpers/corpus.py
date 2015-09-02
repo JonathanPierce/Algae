@@ -3,6 +3,7 @@
 import io
 import os
 import csv
+import shutil
 
 def splitFilename(path):
 	# returns a tuple of (folder_path, filename)
@@ -94,4 +95,18 @@ class Corpus:
 		if self.semesterMap.has_key(student):
 			return self.semesterMap[student]
 		return None
+
+	def cleanPreprocessed(self, student, assignment):
+		path = self.config.corpusPath + student + '/' + assignment + '/__algae__'
+		if os.path.exists(path):
+			shutil.rmtree(path)
+
+	def cleanProcessed(self, assignment):
+		path = self.config.corpusPath + '/__algae__/processed/' + assignment
+		if os.path.exists(path):
+			shutil.rmtree(path)
 	
+	def cleanPostprocessed(self, assignment):
+		path = self.config.corpusPath + '/__algae__/postprocessed/' + assignment
+		if os.path.exists(path):
+			shutil.rmtree(path)

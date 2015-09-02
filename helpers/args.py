@@ -45,7 +45,7 @@ class Args:
 						found = True
 						break
 						
-				if found == False and arg.lower() in ["--force"]:
+				if found == False and arg.lower() in ["--force", "--clean"]:
 					self.options.append(arg[2:].lower())
 					found = True
 					
@@ -60,4 +60,8 @@ class Args:
 		
 		# Mode not 'all'? Add force.
 		if self.mode != 'all' and 'force' not in self.options:
+			self.options.append('force')
+
+		# Have "clean"? Add force.
+		if "clean" in self.options:
 			self.options.append('force')
