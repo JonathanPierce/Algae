@@ -20,6 +20,7 @@ def createIndentedPrinter(indent):
 	
 def printRaw(text):
 	sys.stdout.write(text)
+	sys.stdout.flush()
 	
 def printErrorAndExit(text):
 	printLine()

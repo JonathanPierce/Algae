@@ -59,8 +59,8 @@ def run(students, assignments, args, helpers):
 		for key, cluster in clusters.items():
 			clusterArray.append(cluster)
 
-		resultFilename = common.makeFilenameSafe(filename) + args["resultsSuffix"]
-		common.clustersToStandardJSON(clusterArray, assignment.name, resultFilename, helpers)
+		# write the results for this assignment
+		common.clustersToStandardJSON(clusterArray, assignment.name, args["resultsSuffix"], helpers)
 
 		# say we're done with this assignment
 		helpers.printf("Finised assignment '{}'...\n".format(assignment.name))

@@ -15,7 +15,6 @@ def clustersToStandardJSON(clusters, assignment, filename, helpers):
 	json = io.getJSONString(results)
 	helpers.writeToPostprocessed(json, assignment, filename)
 
-
 # only use with a preprocessor or processor
 def getPartner(student, assignment, semester, helpers):
 	partnerText = helpers.readFromAssignment(student, assignment, "partners.txt")
@@ -28,7 +27,7 @@ def getPartner(student, assignment, semester, helpers):
 				otherSemester = helpers.getSemester(line)
 				if otherSemester != None and otherSemester == semester:
 					return line
-					
+
 	return None
 
 class Member:

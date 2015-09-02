@@ -36,7 +36,13 @@ class Corpus:
 				self.semesterMap[row[0]] = row[1]
 			self.hasSemesters = True
 
-			
+	def getAssignmentPath(self, student, assignment, filename):
+		path = self.config.corpusPath + student + '/' + assignment + '/' + filename
+		if os.path.exists(path):
+			return path
+		else:
+			return None
+
 	def readFromAssignment(self, student, assignment, filename):
 		path = self.config.corpusPath + student + '/' + assignment + '/' + filename
 		if os.path.exists(path):
