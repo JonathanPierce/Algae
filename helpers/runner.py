@@ -2,12 +2,19 @@
 
 import io
 import importlib
+import traceback
 
 def getJobFromConfig(config, jobName):
 	for job in config.jobs:
 		if job.name == jobName:
 			return job
 	return None
+
+def printError(text):
+	io.printLine()
+	io.printIndented(text, 1)
+	io.printLine()
+	traceback.print_exc()
 
 def getPreprocessorReference(config, job, name):
 	job = getJobFromConfig(config, job)
@@ -128,7 +135,7 @@ class Runner:
 					self.progress.updatePreprogress(job.name, pre.name, success)
 					pre.runThisRound = success
 				except:
-					io.printIndented("module '{}' not found or encountered an error.\n".format(pre.name), 1)
+					printError("module '{}' not found or encountered an error.\n".format(pre.name))
 					success = False
 					
 				if success:
@@ -169,7 +176,7 @@ class Runner:
 				# update progress
 				self.progress.updateProgress(job.name, success)
 			except:
-				io.printIndented("module '{}' not found or encountered an error.\n".format(processor.name), 1)
+				printError("module '{}' not found or encountered an error.\n".format(processor.name))
 				success = False
 				
 			if success:
@@ -207,7 +214,7 @@ class Runner:
 					# update progress
 					self.progress.updatePostprogress(job.name, post.name, success)
 				except:
-					io.printIndented("module '{}' not found or encountered an error.\n".format(post.name), 1)
+					printError("module '{}' not found or encountered an error.\n".format(post.name))
 					success = False
 					
 				if success:

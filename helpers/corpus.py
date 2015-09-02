@@ -25,24 +25,32 @@ class Corpus:
 			self.students.append(student.strip())
 			
 	def readFromAssignment(self, student, assignment, filename):
-		# will cause error if file does not exist
 		path = self.config.corpusPath + student + '/' + assignment + '/' + filename
-		return io.readFile(path)
+		if os.path.exists(path):
+			return io.readFile(path)
+		else:
+			return None
 		
 	def readFromPreprocessed(self, student, assignment, filename):
-		# will cause error if file does not exist
 		path = self.config.corpusPath + student + '/' + assignment + '/__algae__/' + filename
-		return io.readFile(path)
+		if os.path.exists(path):
+			return io.readFile(path)
+		else:
+			return None
 		
 	def readFromProcessed(self, assignment, filename):
-		# will cause error if file does not exist
 		path = self.config.corpusPath + '__algae__/processed/' + assignment + '/' + filename
-		return io.readFile(path)
+		if os.path.exists(path):
+			return io.readFile(path)
+		else:
+			return None
 		
 	def readFromPostprocessed(self, assignment, filename):
-		# will cause error if file does not exist
 		path = self.config.corpusPath + '__algae__/postprocessed/' + assignment + '/' + filename
-		return io.readFile(path)
+		if os.path.exists(path):
+			return io.readFile(path)
+		else:
+			return None
 		
 	def writeToPreprocessed(self, text, student, assignment, filename):
 		split = splitFilename(filename)

@@ -6,10 +6,12 @@ class Progress:
 	def __init__(self, configFile):
 		# attempt to read an existing progress file
 		self.fileName = "progress_" + configFile
-		try:
-			self.data = io.readJSON(self.fileName)
-		except:
-			self.data = {}
+		data = io.readJSON(self.fileName)
+		if data == None:
+			data = {}
+
+		# save it
+		self.data = data
 			
 	def flushJSON(self):
 		io.writeJSON(self.data, self.fileName)

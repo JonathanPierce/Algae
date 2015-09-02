@@ -33,7 +33,7 @@ def readFile(filename):
 		handle.close()
 		return text
 	else:
-		printErrorAndExit('File {} not found.'.format(filename))
+		return None
 	
 def writeFile(text, filename):
 	handle = open(filename, 'w+')
@@ -42,7 +42,10 @@ def writeFile(text, filename):
 	
 def readJSON(filename):
 	filetext = readFile(filename)
-	return json.loads(filetext)
+	if filetext != None:
+		return json.loads(filetext)
+	else:
+		return None
 		
 def writeJSON(data, filename):
 	try:

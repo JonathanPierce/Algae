@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import helpers.io as io
 from helpers.config import Config
 from helpers.progress import Progress
