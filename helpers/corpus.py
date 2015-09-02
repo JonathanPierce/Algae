@@ -2,6 +2,7 @@
 
 import io
 import os
+import csv
 
 def splitFilename(path):
 	# returns a tuple of (folder_path, filename)
@@ -23,6 +24,17 @@ class Corpus:
 		studentText = studentText.strip().split("\n")
 		for student in studentText:
 			self.students.append(student.strip())
+
+		# try to load the semester map
+		self.hasSemesters = False
+		self.semesterMap = {}
+		if os.path.exists(config.corpusPath + "semesters.csv"):
+			handle = open(config.corpusPath + "semesters.csv", "r")
+			reader = csv.reader(handle)
+			for row in reader:
+				self.semesterMap[row[0]] = row[1]
+			self.hasSemesters = True
+
 			
 	def readFromAssignment(self, student, assignment, filename):
 		path = self.config.corpusPath + student + '/' + assignment + '/' + filename
@@ -75,4 +87,11 @@ class Corpus:
 			os.makedirs(folderPath)
 		
 		io.writeFile(text, folderPath + '/' + split[1])
+
+	def getSemester(self, student):
+		if self.hasSemesters == False:
+			return "unspecified"
+		if self.semesterMap.has_key(student):
+			return self.semesterMap[student]
+		return None
 	

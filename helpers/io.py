@@ -55,4 +55,5 @@ def writeJSON(data, filename):
 		printErrorAndExit('Data is not JSON serializable.')
 
 def getJSONString(data):
-	return json.dumps(data)
+	# pretty print!
+	return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))

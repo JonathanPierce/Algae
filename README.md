@@ -40,9 +40,10 @@ Typically only used with mode ‘all’
 	- Each postprocessor can be comprised of any number of files or subfolders, and must have a unique Python entry point here.
 - helpers
 	- Algae submodules. Do not modify.
+	- However, common.py does contain many potentially useful functions for your processors. Take a look, and feel free to use!
 - algae.py (the main program)
 - config.json (the Algae configuration file)
-- progress.json (will be automatically created)
+- progress_*.json (these will be automatically created)
 
 ## Corpus Folder Layout
 The corpus is the set of students/assignment you want to run cheating detection on. It is also where Algae will store its results.
@@ -63,6 +64,10 @@ The corpus is the set of students/assignment you want to run cheating detection 
 			- [assignment 1 id]
 				- Postprocessor results go here.	
 	- students.txt (a list of student ids, one per line)
+	- semesters.csv
+		- Optional, but potentially useful.
+		- "[studentId],[semesterId]" on each line
+		- helpers.getSemester(student) API for processors.
 
 ## Configuration File
 The configuration file (config.json) is the main driver of algae. It should be formatted as follows:
@@ -95,7 +100,7 @@ The configuration file (config.json) is the main driver of algae. It should be f
 See the config.json provided for an example.
 
 ## Progress File
-This file (progress_*.json) will be automatically created/managed and is used to ensure that processors (which can take on the order of days to run in some cases) only run if they haven't already. This way, one can adjust the parameters of a postprocessor and run Algae again without also having to rerun the processor. Using the --force option will override this.
+This file (progress_*.json, on per config file used) will be automatically created/managed and is used to ensure that processors (which can take on the order of days to run in some cases) only run if they haven't already. This way, one can adjust the parameters of a postprocessor and run Algae again without also having to rerun the processor. Using the --force option will override this.
 
 ## Processor API
 Algae is designed to be extended with new processors.

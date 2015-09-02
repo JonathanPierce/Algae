@@ -17,26 +17,31 @@ def clustersToStandardJSON(clusters, assignment, filename, helpers):
 
 
 # only use with a preprocessor or processor
-# TODO: Enforce partner is a student from the same semester
-def getPartner(student, assignment, helpers):
+def getPartner(student, assignment, semester, helpers):
 	partnerText = helpers.readFromAssignment(student, assignment, "partners.txt")
+	partnerText = re.sub(",", " ", partnerText)
 	if partnerText != None:
 		partnerArray = partnerText.strip().split("\n")
 		for line in partnerArray:
 			line = line.strip().split(" ")[0]
 			if len(line) > 1 and line != student:
-				return line
+				otherSemester = helpers.getSemester(line)
+				if otherSemester != None and otherSemester == semester:
+					return line
+					
 	return None
 
 class Member:
 	def __init__(self, student, assignment, helpers):
 		self.student = student
-		self.partner = getPartner(student, assignment, helpers)
+		self.semester = helpers.getSemester(student)
+		self.partner = getPartner(student, assignment, self.semester, helpers)
 
 	def toJSON(self):
 		result = {}
 		result["student"] = self.student
 		result["partner"] = self.partner
+		result["semester"] = self.semester
 		return result
 
 class Cluster:

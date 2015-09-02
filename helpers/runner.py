@@ -29,6 +29,7 @@ class PreprocessorHelpers:
 		self.readFromPreprocessed = corpus.readFromPreprocessed
 		self.writeToPreprocessed = corpus.writeToPreprocessed
 		self.printf = io.createIndentedPrinter(2)
+		self.getSemester = corpus.getSemester
 		
 class ProcessorHelpers:
 	def __init__(self, corpus):
@@ -37,6 +38,7 @@ class ProcessorHelpers:
 		self.writeToProcessed = corpus.writeToProcessed
 		self.writeToPostprocessed = corpus.writeToPostprocessed
 		self.printf = io.createIndentedPrinter(2)
+		self.getSemester = corpus.getSemester
 		
 class PostprocessorHelpers:
 	def __init__(self, corpus):
@@ -44,6 +46,7 @@ class PostprocessorHelpers:
 		self.readFromPostprocessed = corpus.readFromPostprocessed
 		self.writeToPostprocessed = corpus.writeToPostprocessed
 		self.printf = io.createIndentedPrinter(2)
+		self.getSemester = corpus.getSemester
 
 class Runner:
 	def __init__(self, config, progress, args, corpus):
