@@ -43,6 +43,9 @@ def mted(tokenPath, sources, compress):
                 results += tokenizer.compress_tokens(funct[1])
             else:
                 results += " ".join(funct[1])
+
+        if compress == False:
+            results += " "
     
     # return results
-    return results
+    return results.strip()
