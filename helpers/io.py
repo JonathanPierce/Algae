@@ -55,6 +55,9 @@ def writeJSON(data, filename):
 	except:
 		printErrorAndExit('Data is not JSON serializable.')
 
-def getJSONString(data):
-	# pretty print!
-	return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
+def getJSONString(data, fancy):
+	if fancy:
+		# pretty print!
+		return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
+	else:
+		return json.dumps(data)

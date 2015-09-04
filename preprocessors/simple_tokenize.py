@@ -6,7 +6,7 @@ import helpers.io as io
 def run(students, assignments, args, helpers):
 	# for each assignment
 	for assign in assignments:
-		helpers.printf("tokenizing {}...".format(assign.name))
+		helpers.printf("tokenizing '{}'...".format(assign.name))
 		index = 0
 
 		# for each student

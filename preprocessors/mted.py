@@ -2,7 +2,7 @@
 # assignment args:
 # - entries (array):
 # -- entryPoint (string): File that Clang should "compile". If using C++ templates, this may be an instructor-provided main file.
-# -- sources (string array): The files that have functions that we are interested in.
+# -- sources (string array): The files that have functions that we are interested in. First file listed should be the primary.
 # processor args:
 # - compress (bool - optional): Whether the token should be compressed. Defaults to true.
 
@@ -18,11 +18,12 @@ def run(students, assignments, args, helpers):
 
 	# for each assignment
 	for assign in assignments:
-		helpers.printf("processing {}...".format(assign.name))
+		helpers.printf("processing '{}'...".format(assign.name))
 		index = 0
 
 		# for each student
 		for student in students:
+			# for each entry
 			entries = assign.args["entries"]
 			for entry in entries:
 				entryPoint = entry["entryPoint"]

@@ -40,6 +40,8 @@ class ProcessorHelpers:
 		self.writeToPostprocessed = corpus.writeToPostprocessed
 		self.printf = io.createIndentedPrinter(2)
 		self.getSemester = corpus.getSemester
+		self.getAssignmentPath = corpus.getAssignmentPath
+		self.getPreprocessedPath = corpus.getPreprocessedPath
 		
 class PostprocessorHelpers:
 	def __init__(self, corpus):

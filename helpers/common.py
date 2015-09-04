@@ -1,6 +1,7 @@
 # a collection of useful helper functions for the processors
 import re
 import io
+import csv
 
 # derp.ext -> derp_ext_
 def makeFilenameSafe(filename):
@@ -12,14 +13,18 @@ def clustersToStandardJSON(clusters, assignment, filename, helpers):
 		if cluster.hasCheating():
 			results.append(cluster.toJSON())
 
-	json = io.getJSONString(results)
+	json = io.getJSONString(results, True)
 	helpers.writeToPostprocessed(json, assignment, filename)
+
+def pairResultsToProcessedJSON(results, assignment, filename, helpers):
+	json = io.getJSONString(results.toJSON(), False)
+	helpers.writeToProcessed(json, assignment, filename)
 
 # only use with a preprocessor or processor
 def getPartner(student, assignment, semester, helpers):
 	partnerText = helpers.readFromAssignment(student, assignment, "partners.txt")
-	partnerText = re.sub(",", " ", partnerText)
 	if partnerText != None:
+		partnerText = re.sub(",", " ", partnerText)
 		partnerArray = partnerText.strip().split("\n")
 		for line in partnerArray:
 			line = line.strip().split(" ")[0]
@@ -29,6 +34,34 @@ def getPartner(student, assignment, semester, helpers):
 					return line
 
 	return None
+
+# PairResults take up less space on disk than Corpus results.
+# If used properly, can rebuild a corpus in RAM from these.
+class PairResult:
+	def __init__(self, student1, student2, score):
+		self.pair = [student1, student2]
+		self.score = score
+
+	def toJSON(self):
+		result = {}
+		result["score"] = self.score
+		result["pair"] = self.pair
+		return result
+
+class PairResults:
+	def __init__(self):
+		self.pairs = []
+
+	def add(self, pair):
+		self.pairs.append(pair)
+
+	def toJSON(self):
+		# return JSON serialiazble form
+		results = []
+		for pair in self.pairs:
+			results.append(pair.toJSON())
+		return results
+
 
 class Member:
 	def __init__(self, student, assignment, helpers):
