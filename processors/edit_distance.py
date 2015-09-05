@@ -10,6 +10,7 @@
 import helpers.common as common
 import helpers.io as io
 import os
+from multiprocessing import Process
 
 def runEditDistance(path1, path2):
 	handle = os.popen("./processors/bin/distance {} {}".format(path1, path2))
@@ -17,9 +18,56 @@ def runEditDistance(path1, path2):
 	handle.close()
 	return distance
 
+# THREAD CONTENT
+def runEntry(entry, students, helpers, assignName, sourceSuffix, resultsSuffix, allowPartners):
+	# create an empty PairResults object
+		results = common.PairResults()
+		entryPoint = entry["entryPoint"]
+
+		# for each pair of students
+		# for each pair of students
+		for i in range(len(students)):
+			for j in range(i):
+				# are these students partners?
+				student1 = students[i]
+				student2 = students[j]
+
+				# get both file paths
+				safeFilename = common.makeFilenameSafe(entryPoint) + sourceSuffix
+				path1 = helpers.getPreprocessedPath(student1, assignName, safeFilename)
+				path2 = helpers.getPreprocessedPath(student2, assignName, safeFilename)
+
+				# make sure both paths exist
+				if path1 != None and path2 != None:
+					member1 = common.Member(student1, assignName, helpers)
+					member2 = common.Member(student2, assignName, helpers)
+
+					checkDistance = True
+
+					if allowPartners and member1.partner != None and member2.partner != None:
+						if member1.student == member2.partner and member2.student == member1.partner:
+							# student are partners, ignore
+							checkDistance = False
+
+					# If not, calculate edit distance and save to corpus
+					if checkDistance:
+						editDistance = runEditDistance(path1, path2)
+
+						# save the pair result
+						result = common.PairResult(student1, student2, editDistance)
+						results.add(result)
+
+		# flush results to disk
+		resultFilename = common.makeFilenameSafe(entryPoint) + resultsSuffix
+		common.pairResultsToProcessedJSON(results, assignName, resultFilename, helpers)
+		helpers.printf("Finished '{}'!\n".format(assignName))
+
 def run(students, assignments, args, helpers):
 	sourceSuffix = args["sourceSuffix"]
 	resultsSuffix = args["resultsSuffix"]
+
+	# threads to join later
+	threads = []
 
 	# for each assignment
 	for assignment in assignments:
@@ -28,56 +76,18 @@ def run(students, assignments, args, helpers):
 		allowPartners = assignment.args["allowPartners"]
 
 		# print progress
-		helpers.printf("processing '{}'...".format(assignName))
-		index = 0
+		helpers.printf("processing '{}' in parellel...\n".format(assignName))
 
 		entries = assignment.args["entries"]
 		for entry in entries:
-			# create an empty PairResults object
-			results = common.PairResults()
-			entryPoint = entry["entryPoint"]
+			# create the thread
+			t = Process(target=runEntry, args=(entry, students, helpers, assignName, sourceSuffix, resultsSuffix, allowPartners))
+			threads.append(t)
+			t.start()
 
-			# for each pair of students
-			# for each pair of students
-			for i in range(len(students)):
-				for j in range(i):
-					# are these students partners?
-					student1 = students[i]
-					student2 = students[j]
-
-					# get both file paths
-					safeFilename = common.makeFilenameSafe(entryPoint) + sourceSuffix
-					path1 = helpers.getPreprocessedPath(student1, assignName, safeFilename)
-					path2 = helpers.getPreprocessedPath(student2, assignName, safeFilename)
-
-					# make sure both paths exist
-					if path1 != None and path2 != None:
-						member1 = common.Member(student1, assignName, helpers)
-						member2 = common.Member(student2, assignName, helpers)
-
-						checkDistance = True
-
-						if allowPartners and member1.partner != None and member2.partner != None:
-							if member1.student == member2.partner and member2.student == member1.partner:
-								# student are partners, ignore
-								checkDistance = False
-
-						# If not, calculate edit distance and save to corpus
-						if checkDistance:
-							editDistance = runEditDistance(path1, path2)
-
-							# save the pair result
-							result = common.PairResult(student1, student2, editDistance)
-							results.add(result)
-
-				index = index + 1
-				if index % 10 == 0:
-					io.printRaw(".")
-
-			# flush results to disk
-			resultFilename = common.makeFilenameSafe(entryPoint) + resultsSuffix
-			common.pairResultsToProcessedJSON(results, assignName, resultFilename, helpers)
-			print " done!"
+	# join all of the threads
+	for t in threads:
+		t.join()
 
 	# all done
 	return True

@@ -9,6 +9,30 @@
 import tokenizer.main as tokenizer
 import helpers.common as common
 import helpers.io as io
+from multiprocessing import Process
+
+def doAssignment(students, assign, helpers, compress):
+	helpers.printf("processing '{}' in parellel...\n".format(assign.name))
+
+	# for each student
+	for student in students:
+		# for each entry
+		entries = assign.args["entries"]
+		for entry in entries:
+			entryPoint = entry["entryPoint"]
+			path = helpers.getAssignmentPath(student, assign.name, entryPoint)
+			sources = entry["sources"]
+
+			if path != None:
+				# tokenize the file
+				result = tokenizer.mted(path, sources, compress)
+
+				# write the result
+				safeFilename = common.makeFilenameSafe(entryPoint) + "mted.txt"
+				helpers.writeToPreprocessed(result, student, assign.name, safeFilename)
+
+	# all done
+	helpers.printf("Finished '{}'!\n".format(assign.name))
 
 def run(students, assignments, args, helpers):
 	# Compress tokens by default
@@ -16,33 +40,18 @@ def run(students, assignments, args, helpers):
 	if args.has_key("compress"):
 		compress = args["compress"]
 
+	# threads to join later
+	threads = []
+
 	# for each assignment
 	for assign in assignments:
-		helpers.printf("processing '{}'...".format(assign.name))
-		index = 0
+		t = Process(target=doAssignment, args=(students, assign, helpers, compress))
+		threads.append(t)
+		t.start()
 
-		# for each student
-		for student in students:
-			# for each entry
-			entries = assign.args["entries"]
-			for entry in entries:
-				entryPoint = entry["entryPoint"]
-				path = helpers.getAssignmentPath(student, assign.name, entryPoint)
-				sources = entry["sources"]
-
-				if path != None:
-					# tokenize the file
-					result = tokenizer.mted(path, sources, compress)
-
-					# write the result
-					safeFilename = common.makeFilenameSafe(entryPoint) + "mted.txt"
-					helpers.writeToPreprocessed(result, student, assign.name, safeFilename)
-
-			index = index + 1
-			if index % 20 == 0:
-				io.printRaw(".")
-
-		print " done!"
+	# join the threads
+	for t in threads:
+		t.join()
 
 	# all done here
 	return True
