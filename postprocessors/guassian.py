@@ -5,6 +5,7 @@
 # - sourceSuffix (string) - Suffix used by the processor.
 # - resultsSuffix (string) - Suffix used by the postprocessor.
 # - deviation (number): the std. deviation of interest
+# - minThreshold (number - optional): If the score above/below (depeding on "above") this value, always keep
 # - above (bool): Whether we keep all those above or below this deviation.
 
 import helpers.common as common
@@ -48,7 +49,7 @@ def zScore(score, mean, deviation):
 	return (score - mean) / deviation
 
 # filters out result those that aren't suspicious
-def filterData(data, mean, deviation, threshold, above):
+def filterData(data, mean, deviation, threshold, above, minThreshold):
 	results = []
 
 	for element in data:
@@ -56,9 +57,19 @@ def filterData(data, mean, deviation, threshold, above):
 
 		if z <= threshold and not above:
 			results.append(element)
+			continue
 
 		if z >= threshold and above:
 			results.append(element)
+			continue
+
+		if minThreshold != None and element.score <= minThreshold and not above:
+			results.append(element)
+			continue
+
+		if minThreshold != None and element.score >= minThreshold and above:
+			results.append(element)
+			continue
 
 	return results
 
@@ -86,8 +97,12 @@ def runEntry(entry, students, helpers, assignName, args, allowPartners):
 	resultsSuffix = args["resultsSuffix"]
 	threshold = args["threshold"]
 	above = args["above"]
+	entryFile = entry["sources"][0]
+	minThreshold = None
+	if args.has_key("minThreshold"):
+		minThreshold = args["minThreshold"]
 
-	safeFilename = common.makeFilenameSafe(entry["sources"][0]) + sourceSuffix
+	safeFilename = common.makeFilenameSafe(entryFile) + sourceSuffix
 	filepath = helpers.getProcessedPath(assignName, safeFilename)
 
 	if filepath != None:
@@ -104,17 +119,16 @@ def runEntry(entry, students, helpers, assignName, args, allowPartners):
 
 			# get the deviation
 			deviation = getDeviation(data, mean)
-			helpers.printf("{}: mean {}, deviation {}\n".format(assignName, mean, deviation))
+			helpers.printf("{}/{}: mean {}, deviation {}\n".format(assignName, entryFile, mean, deviation))
 
 			# filter out data
-			filtered = filterData(data, mean, deviation, threshold, above)
+			filtered = filterData(data, mean, deviation, threshold, above, minThreshold)
 
 			# create the clusters
-			filename = entry["sources"][0]
-			clusters = createClusters(filtered, filename, assignName, allowPartners, helpers)
+			clusters = createClusters(filtered, entryFile, assignName, allowPartners, helpers)
 
 			# flush to disk
-			common.clustersToStandardJSON(clusters, assignName, resultsSuffix, helpers)
+			common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(entryFile) + resultsSuffix, helpers)
 
 			# all done!
 			helpers.printf("Finished '{}'!\n".format(assignName))
