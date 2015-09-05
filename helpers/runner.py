@@ -22,36 +22,6 @@ def getPreprocessorReference(config, job, name):
 		if pre.name == name:
 			return pre
 	return None
-	
-class PreprocessorHelpers:
-	def __init__(self, corpus):
-		self.readFromAssignment = corpus.readFromAssignment
-		self.readFromPreprocessed = corpus.readFromPreprocessed
-		self.writeToPreprocessed = corpus.writeToPreprocessed
-		self.printf = io.createIndentedPrinter(2)
-		self.getSemester = corpus.getSemester
-		self.getAssignmentPath = corpus.getAssignmentPath
-		
-class ProcessorHelpers:
-	def __init__(self, corpus):
-		self.readFromAssignment = corpus.readFromAssignment
-		self.readFromPreprocessed = corpus.readFromPreprocessed
-		self.writeToProcessed = corpus.writeToProcessed
-		self.writeToPostprocessed = corpus.writeToPostprocessed
-		self.printf = io.createIndentedPrinter(2)
-		self.getSemester = corpus.getSemester
-		self.getAssignmentPath = corpus.getAssignmentPath
-		self.getPreprocessedPath = corpus.getPreprocessedPath
-		
-class PostprocessorHelpers:
-	def __init__(self, corpus):
-		self.readFromProcessed = corpus.readFromProcessed
-		self.readFromPostprocessed = corpus.readFromPostprocessed
-		self.writeToPostprocessed = corpus.writeToPostprocessed
-		self.printf = io.createIndentedPrinter(2)
-		self.getSemester = corpus.getSemester
-		self.getProcessedPath = corpus.getProcessedPath
-		self.readFromAssignment = corpus.readFromAssignment
 
 class Runner:
 	def __init__(self, config, progress, args, corpus):
@@ -156,7 +126,7 @@ class Runner:
 				students = self.corpus.students
 				assignments = job.assignments
 				args = pre.args
-				helpers = PreprocessorHelpers(self.corpus)
+				helpers = self.corpus
 				
 				# try to import the correct module
 				try:
@@ -198,7 +168,7 @@ class Runner:
 			students = self.corpus.students
 			assignments = job.assignments
 			args = processor.args
-			helpers = ProcessorHelpers(self.corpus)
+			helpers = self.corpus
 			
 			# try to import the correct module
 			try:
@@ -236,7 +206,7 @@ class Runner:
 				students = self.corpus.students
 				assignments = job.assignments
 				args = post.args
-				helpers = PostprocessorHelpers(self.corpus)
+				helpers = self.corpus
 				
 				# try to import the correct module
 				try:

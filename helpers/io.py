@@ -12,12 +12,6 @@ def printLine():
 def printIndented(text, indent):
 	printRaw((' ' * (4 * indent)) + '- ' + text)
 	
-def createIndentedPrinter(indent):
-	def printFun(text):
-		printIndented(text, indent)
-		
-	return printFun
-	
 def printRaw(text):
 	sys.stdout.write(text)
 	sys.stdout.flush()

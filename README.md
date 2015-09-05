@@ -6,7 +6,8 @@ A platform for running code plagiarism (cheating) detection software on large da
 
 1. Clone the algae repo.
 2. Set up a corpus. See the section below.
-3. Set up your detectors and configuration file.
+3. Make sure that clang and libclang are installed (along with python binding). Many built-in processors require this.
+4. Set up your detectors and configuration file.
 
 Then, run algae as follows from your algae folder:
 
@@ -26,7 +27,7 @@ python algae.py [mode] [jobs] [options]
 - --force - If present, ignores progress.json and will re-run all job steps.
 Typically only used with mode ‘all’
 - --config [filename] - Will use [filename] as the config instead of config.json.
-- --clean - Will PERMANENTLY delete all data from all __algae__ folders in the corpus, then run with --force.
+- --clean - Will PERMANENTLY delete all data from ALL __algae__ folders in the corpus, then run with --force.
 
 ## Algae Folder Layout
 
@@ -111,6 +112,6 @@ A preprocessor/processor/postprocessor is a python program containing a function
 - students - an array of all student ids
 - assignments - the array of assignment that this processor should check
 - args - args to the preprocessor/processor/postprocessor (passed in from config)
-- helpers - a set of handy helper functions (see implimention in helpers/runner.py)
+- helpers - a set of handy helper functions over the corpus (see implimention in helpers/corpus.py)
 
 Processors should return True on success and False on failure.

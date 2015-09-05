@@ -130,3 +130,8 @@ class Corpus:
 		path = self.config.corpusPath + '/__algae__/postprocessed/' + assignment
 		if os.path.exists(path):
 			shutil.rmtree(path)
+
+	# this object gets passed into all processors
+	# Might as well provide a function to print to the correct indentation in the terminal
+	def printf(self, text):
+		io.printIndented(text, 2)
