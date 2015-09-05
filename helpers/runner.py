@@ -50,6 +50,8 @@ class PostprocessorHelpers:
 		self.writeToPostprocessed = corpus.writeToPostprocessed
 		self.printf = io.createIndentedPrinter(2)
 		self.getSemester = corpus.getSemester
+		self.getProcessedPath = corpus.getProcessedPath
+		self.readFromAssignment = corpus.readFromAssignment
 
 class Runner:
 	def __init__(self, config, progress, args, corpus):
