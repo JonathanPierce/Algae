@@ -8,62 +8,74 @@
 
 import helpers.common as common
 from hashlib import sha256
+from multiprocessing import Process
 
 def hashText(text):
 	return sha256(text).hexdigest()
 
+def runAssignment(assignment, students, args, helpers):
+	clusters = {}
+	allowPartners = assignment.args["allowPartners"]
+
+	# for each file
+	files = assignment.args["files"]
+	for filename in files:
+		# for each pair of students
+		for i in range(len(students)):
+			for j in range(i):
+				student1 = students[i]
+				student2 = students[j]
+				hashFilename = common.makeFilenameSafe(filename) + args["sourceSuffix"]
+
+				student1Hash = helpers.readFromPreprocessed(student1, assignment.name, hashFilename)
+				student2Hash = helpers.readFromPreprocessed(student2, assignment.name, hashFilename)
+
+				if student1Hash != None and student2Hash != None:
+					# see if the hashes match
+					student1Hash = hashText(student1Hash)
+					student2Hash = hashText(student2Hash)
+
+					if student1Hash == student2Hash:
+						# if they do, add to the cluster
+						member1 = common.Member(student1, assignment.name, helpers)
+						member2 = common.Member(student2, assignment.name, helpers)
+
+						# find an existing cluster or create a new one
+						cluster = None
+						if clusters.has_key(student1Hash):
+							cluster = clusters[student1Hash]
+						else:
+							cluster = common.Cluster(allowPartners, filename, 100)
+							clusters[student1Hash] = cluster
+
+						# add these students
+						cluster.add(member1)
+						cluster.add(member2)
+
+	# postprocess the clusters
+	clusterArray = []
+	for key, cluster in clusters.items():
+		clusterArray.append(cluster)
+
+	# write the results for this assignment
+	common.clustersToStandardJSON(clusterArray, assignment.name, args["resultsSuffix"], helpers)
+
+	# say we're done with this assignment
+	helpers.printf("Finished assignment '{}'...\n".format(assignment.name))
+
 # the big kahuna
 def run(students, assignments, args, helpers):
+	threads = []
+
 	for assignment in assignments:
 		# create an empty cluster map for this assignment
-		clusters = {}
-		allowPartners = assignment.args["allowPartners"]
+		t = Process(target=runAssignment, args=(assignment, students, args, helpers))
+		threads.append(t)
+		t.start()
 
-		# for each file
-		files = assignment.args["files"]
-		for filename in files:
-			# for each pair of students
-			for i in range(len(students)):
-				for j in range(i):
-					student1 = students[i]
-					student2 = students[j]
-					hashFilename = common.makeFilenameSafe(filename) + args["sourceSuffix"]
-
-					student1Hash = helpers.readFromPreprocessed(student1, assignment.name, hashFilename)
-					student2Hash = helpers.readFromPreprocessed(student2, assignment.name, hashFilename)
-
-					if student1Hash != None and student2Hash != None:
-						# see if the hashes match
-						student1Hash = hashText(student1Hash)
-						student2Hash = hashText(student2Hash)
-
-						if student1Hash == student2Hash:
-							# if they do, add to the cluster
-							member1 = common.Member(student1, assignment.name, helpers)
-							member2 = common.Member(student2, assignment.name, helpers)
-
-							# find an existing cluster or create a new one
-							cluster = None
-							if clusters.has_key(student1Hash):
-								cluster = clusters[student1Hash]
-							else:
-								cluster = common.Cluster(allowPartners, filename, 100)
-								clusters[student1Hash] = cluster
-
-							# add these students
-							cluster.add(member1)
-							cluster.add(member2)
-
-		# postprocess the clusters
-		clusterArray = []
-		for key, cluster in clusters.items():
-			clusterArray.append(cluster)
-
-		# write the results for this assignment
-		common.clustersToStandardJSON(clusterArray, assignment.name, args["resultsSuffix"], helpers)
-
-		# say we're done with this assignment
-		helpers.printf("Finised assignment '{}'...\n".format(assignment.name))
+	# wait for all to finish
+	for t in threads:
+		t.join()
 
 	# we did it!
 	return True

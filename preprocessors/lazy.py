@@ -2,13 +2,26 @@ import re
 from hashlib import sha256
 import helpers.common as common
 
+# http://stackoverflow.com/questions/241327/python-snippet-to-remove-c-and-c-comments
+def remove_comments(text):
+    def replacer(match):
+        s = match.group(0)
+        if s.startswith('/'):
+            return " " # note: a space and not an empty string
+        else:
+            return s
+    pattern = re.compile(
+        r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"',
+        re.DOTALL | re.MULTILINE
+    )
+    return re.sub(pattern, replacer, text)
+
 def mangle(text, student, assignment, filename, helpers):
 	# convert to uppercase
 	text = text.upper()
 
 	# remove most comments
-	text = re.sub("\/\/.*\n", "\n", text)
-	text = re.sub("\/\*(.|\n)*\*\/", "\n", text)
+	text = remove_comments(text)
 
 	# remove certain other characters ( ) ; , { } _ ' "
 	# also whitespace
