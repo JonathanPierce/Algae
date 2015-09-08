@@ -57,6 +57,13 @@ class Corpus:
 		else:
 			return None
 
+	def getPostprocessedPath(self, assignment, filename):
+		path = self.config.corpusPath + '__algae__/postprocessed/' + assignment + '/' + filename
+		if os.path.exists(path):
+			return path
+		else:
+			return None
+
 	def readFromAssignment(self, student, assignment, filename):
 		path = self.config.corpusPath + student + '/' + assignment + '/' + filename
 		if os.path.exists(path):
@@ -110,6 +117,8 @@ class Corpus:
 		io.writeFile(text, folderPath + '/' + split[1])
 
 	def getSemester(self, student):
+		if student == None:
+			return None
 		if self.hasSemesters == False:
 			return "unspecified"
 		if self.semesterMap.has_key(student):

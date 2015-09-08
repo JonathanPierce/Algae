@@ -22,16 +22,17 @@ def pairResultsToProcessedJSON(results, assignment, filename, helpers):
 
 # only use with a preprocessor or processor
 def getPartner(student, assignment, semester, helpers):
-	partnerText = helpers.readFromAssignment(student, assignment, "partners.txt")
-	if partnerText != None:
-		partnerText = re.sub(",", " ", partnerText)
-		partnerArray = partnerText.strip().split("\n")
-		for line in partnerArray:
-			line = line.strip().split(" ")[0]
-			if len(line) > 1 and line != student:
-				otherSemester = helpers.getSemester(line)
-				if otherSemester != None and otherSemester == semester:
-					return line
+	if student != None:
+		partnerText = helpers.readFromAssignment(student, assignment, "partners.txt")
+		if partnerText != None:
+			partnerText = re.sub(",", " ", partnerText)
+			partnerArray = partnerText.strip().split("\n")
+			for line in partnerArray:
+				line = line.strip().split(" ")[0]
+				if len(line) > 1 and line != student:
+					otherSemester = helpers.getSemester(line)
+					if otherSemester != None and otherSemester == semester:
+						return line
 
 	return None
 
