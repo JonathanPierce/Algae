@@ -1,6 +1,7 @@
 # Postprocessed pair results by calculating mean/std. deviation, and finding approrpaite outliers.
 # assignment args:
 # - see processor/edit_distance.py
+# - alternatively, just use a files list
 # postprocessor args:
 # - sourceSuffix (string) - Suffix used by the processor.
 # - resultsSuffix (string) - Suffix used by the postprocessor.
@@ -91,18 +92,18 @@ def createClusters(data, filename, assignName, allowPartners, helpers):
 	return clusters
 
 # runs an entry in parellel
-def runEntry(entry, students, helpers, assignName, args, allowPartners):
+def runEntry(filename, students, helpers, assignment, args, allowPartners):
 	# get the data
+	assignName = assignment.name
 	sourceSuffix = args["sourceSuffix"]
 	resultsSuffix = args["resultsSuffix"]
-	threshold = args["threshold"]
+	threshold = assignment.args["threshold"]
 	above = args["above"]
-	entryFile = entry["sources"][0]
 	minThreshold = None
-	if args.has_key("minThreshold"):
-		minThreshold = args["minThreshold"]
+	if assignment.args.has_key("minThreshold"):
+		minThreshold = assignment.args["minThreshold"]
 
-	safeFilename = common.makeFilenameSafe(entryFile) + sourceSuffix
+	safeFilename = common.makeFilenameSafe(filename) + sourceSuffix
 	filepath = helpers.getProcessedPath(assignName, safeFilename)
 
 	if filepath != None:
@@ -119,16 +120,16 @@ def runEntry(entry, students, helpers, assignName, args, allowPartners):
 
 			# get the deviation
 			deviation = getDeviation(data, mean)
-			helpers.printf("{}/{}: mean {}, deviation {}\n".format(assignName, entryFile, mean, deviation))
+			helpers.printf("{}/{}: mean {}, deviation {}\n".format(assignName, filename, mean, deviation))
 
 			# filter out data
 			filtered = filterData(data, mean, deviation, threshold, above, minThreshold)
 
 			# create the clusters
-			clusters = createClusters(filtered, entryFile, assignName, allowPartners, helpers)
+			clusters = createClusters(filtered, filename, assignName, allowPartners, helpers)
 
 			# flush to disk
-			common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(entryFile) + resultsSuffix, helpers)
+			common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(filename) + resultsSuffix, helpers)
 
 			# all done!
 			helpers.printf("Finished '{}'!\n".format(assignName))
@@ -148,10 +149,22 @@ def run(students, assignments, args, helpers):
 		# print progress
 		helpers.printf("postprocessing '{}' in parellel...\n".format(assignName))
 
-		entries = assignment.args["entries"]
+		# allow entry lists and file lists
+		entries = []
+		if assignment.args.has_key("entries"):
+			entries = assignment.args["entries"]
+		else:
+			if assignment.args.has_key("files"):
+				entries = assignment.args["files"]
+
 		for entry in entries:
+			# use the first source as the filename in case fo an entry
+			filename = entry
+			if assignment.args.has_key("entries"):
+				filename = entry["sources"][0]
+
 			# create the thread
-			t = Process(target=runEntry, args=(entry, students, helpers, assignName, args, allowPartners))
+			t = Process(target=runEntry, args=(filename, students, helpers, assignment, args, allowPartners))
 			threads.append(t)
 			t.start()
 
