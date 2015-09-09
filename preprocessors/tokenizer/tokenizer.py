@@ -118,6 +118,18 @@ class Tokenizer:
     def full_tokenize(self):
         cursor = self.tu.cursor
         return self.full_tokenize_cursor(cursor)
+
+    # returns the raw tokens in their original format
+    def raw_tokenize(self):
+        cursor = self.tu.cursor
+
+        results = []
+
+        tokens = cursor.get_tokens()
+        for token in tokens:
+            results.append(token)
+
+        return results
     
     # returns a list of function name / function / filename tuples
     def split_functions(self, method_only):

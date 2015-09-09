@@ -7,7 +7,8 @@ class IndexEntry():
 		self.students = []
 
 	def add(self, student):
-		self.students.append(student)
+		if student not in self.students:
+			self.students.append(student)
 
 class InvertedIndex():
 	def __init__(self):
