@@ -28,7 +28,7 @@ def doAssignment(students, assign, helpers, compress):
 				result = tokenizer.mted(path, sources, compress)
 
 				# write the result
-				safeFilename = common.makeFilenameSafe(entry["sources"][0]) + "mted.txt"
+				safeFilename = common.makeFilenameSafe(sources[0]) + "mted.txt"
 				helpers.writeToPreprocessed(result, student, assign.name, safeFilename)
 
 	# all done

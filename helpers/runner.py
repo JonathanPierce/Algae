@@ -53,10 +53,10 @@ class Runner:
 			if args.mode == "all" or args.mode == "preprocess":
 				success = success and self.runPreprocess(job)
 				
-			if args.mode == "all" or args.mode == "process":
+			if success and (args.mode == "all" or args.mode == "process"):
 				success = success and self.runProcess(job)
 				
-			if args.mode == "all" or args.mode == "postprocess":
+			if success and (args.mode == "all" or args.mode == "postprocess"):
 				success = success and self.runPostprocess(job)
 				
 			if success:
@@ -124,7 +124,7 @@ class Runner:
 			if self.shouldPreprocess(jobName, pre.name, pre.runThisRound):
 				# we need to run, first gather arguments
 				students = self.corpus.students
-				assignments = job.assignments
+				assignments = getJobFromConfig(self.config, jobName).assignments
 				args = pre.args
 				helpers = self.corpus
 				
