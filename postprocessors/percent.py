@@ -66,6 +66,9 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 
 			# take to the top bottom percent
 			takeNum = math.floor(float(len(data)) * percent)
+			if "maxResults" in args:
+				takeNum = min(args["maxResults"], takeNum)
+
 			results = None
 			if top:
 				takeNum = int(takeNum * -1)
