@@ -15,6 +15,8 @@ Then, run algae as follows from your algae folder:
 python algae.py [mode] [jobs] [options]
 ```
 
+If you see errors regarding libclang, head over to preprocessors/tokenizer/tokenizer.py and change the hardcoded path to point to the folder containing 'libclang.so'.
+
 ### Mode
 - “all” - default if none specified - Runs the preprocessors, processor, and postprocessors in order.
 - “preprocess|process|postprocess” - Runs only the specified lifecycle event. Using these automatically applies the ‘-force’ option.

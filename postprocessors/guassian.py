@@ -132,7 +132,7 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 			common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(filename) + resultsSuffix, helpers)
 
 			# all done!
-			helpers.printf("Finished '{}'!\n".format(assignName))
+			helpers.printf("Finished '{}', with {} results!\n".format(assignName, len(clusters)))
 
 
 # the main function

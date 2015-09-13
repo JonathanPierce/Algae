@@ -16,6 +16,8 @@ def genStats(path, helpers):
 	numFunctions = 0 # ident followed by (, declarations and calls
 	numDefines = 0
 	numMathOps = 0
+	lenLongestLine = 0
+	numReturns = 0
 
 	# other data
 	idents = []
@@ -29,12 +31,16 @@ def genStats(path, helpers):
 			numComments += 1
 
 		# look for math ops
-		if token.spelling in ["+", "-", "*", "/", "|", "&", "+=", "-=", "*=", "/=", ">>=", "<<=", "++", "--"]:
+		if token.spelling in ["+", "-", "*", "/", "|", "&", "+=", "-=", "*=", "/=", ">>=", "<<=", "++", "--", "~", ">>"]:
 			numMathOps += 1
 
 		# look for function decs/calls
 		if lastWasIdent and token.spelling == "(":
 			numFunctions += 1
+
+		# count the number of returns
+		if token.spelling == "return":
+			numReturns += 1
 
 		# add the identifier to the list, set lastWasIdent
 		if token.kind.name == "IDENTIFIER":
@@ -54,7 +60,13 @@ def genStats(path, helpers):
 	numDefines = len(defines)
 
 	# find the number of lines
-	numLines = len(text.split("\n"))
+	lines = text.split("\n")
+	numLines = len(lines)
+
+	# get the length of the longest line
+	for line in lines:
+		if len(line) > lenLongestLine:
+			lenLongestLine = len(line)
 
 	# find the total amount of whitespace
 	for char in text:
@@ -70,6 +82,8 @@ def genStats(path, helpers):
 	results["numFunctions"] = numFunctions
 	results["numDefines"] = numDefines
 	results["numMathOps"] = numMathOps
+	results["numReturns"] = numReturns
+	results["lenLongestLine"] = lenLongestLine
 	return results
 
 def runAssignment(students, assign, helpers):

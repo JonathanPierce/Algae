@@ -3,7 +3,7 @@ from multiprocessing import Process
 import helpers.io as io
 import math
 
-statTypes = ["numLines", "numWhitespace", "numComments", "avgIdentLength", "numFunctions", "numDefines", "numMathOps"]
+statTypes = ["numLines", "numWhitespace", "numComments", "avgIdentLength", "numFunctions", "numDefines", "numMathOps", "lenLongestLine", "numReturns"]
 
 # finds the mean of the data
 def getMean(data, key):
@@ -79,8 +79,10 @@ def runAssignment(students, assign, args, helpers):
 			if student in studentDict:
 				data = studentDict[student]
 				total = 0.0
+
 				for stat in statTypes:
-					total += abs(zScore(data[stat], stats[stat].mean, stats[stat].deviation))
+					if stats[stat].deviation != 0.0:
+						total += abs(zScore(data[stat], stats[stat].mean, stats[stat].deviation))
 
 				if total >= threshold:
 					cluster = common.Cluster(False, filename, total)
