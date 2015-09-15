@@ -16,7 +16,7 @@ def remove_comments(text):
     )
     return re.sub(pattern, replacer, text)
 
-def mangle(text, student, assignment, filename, helpers):
+def mangle_text(text):
 	# convert to uppercase
 	text = text.upper()
 
@@ -25,7 +25,10 @@ def mangle(text, student, assignment, filename, helpers):
 
 	# remove certain other characters ( ) ; , { } _ ' "
 	# also whitespace
-	text = re.sub("\(|\)|;|,|}|{|_|'|\"|\s", "", text)
+	return re.sub("\(|\)|;|,|}|{|_|'|\"|\s", "", text)
+
+def mangle(text, student, assignment, filename, helpers):
+	text = mangle_text(text)
 
 	# write to preprocessed
 	helpers.writeToPreprocessed(text, student, assignment, filename + "lazy_processed.txt")

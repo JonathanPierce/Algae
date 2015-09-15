@@ -25,8 +25,8 @@ def getPartner(student, assignment, semester, helpers):
 	if student != None:
 		partnerText = helpers.readFromAssignment(student, assignment, "partners.txt")
 		if partnerText != None:
-			partnerText = re.sub(",", " ", partnerText)
-			partnerText = re.sub(":", " ", partnerText)
+			partnerText = re.sub(",", "\n", partnerText)
+			partnerText = re.sub(":", "\n", partnerText)
 			partnerArray = partnerText.strip().split("\n")
 			for line in partnerArray:
 				line = line.strip().split(" ")[0]

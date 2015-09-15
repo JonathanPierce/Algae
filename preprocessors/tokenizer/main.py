@@ -10,7 +10,7 @@ import helpers.io as io
 def simple(filepath):
     tok = tokenizer.Tokenizer(filepath)
     results = tok.full_tokenize()
-    return " ".join(results)
+    return tokenizer.compress_tokens(results)
 
 # smartly tokenizes a function for modified token edit distance (MTED)
 # tokenPath is the entry point (potentially a main file, if C++ templates are used)
