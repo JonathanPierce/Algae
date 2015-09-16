@@ -1,3 +1,4 @@
 progress_*.json
 config_*.json
+import.json
 *.pyc
