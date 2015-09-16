@@ -1,0 +1,131 @@
+html, body {
+	padding: 0px;
+	margin: 0px;
+	width: 100%;
+	height: 100%;
+}
+
+.noSelect {
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+	cursor: default;
+}
+
+.algae {
+	display: flex;
+	flex-flow: column;
+	height: 100%;
+}
+
+.pageHeader {
+	width: 100%;
+	flex: 0 1 60px;
+	border-bottom: 1px solid black;
+	font-family: serif;
+	background: rgb(240, 240, 240);
+}
+
+.pageHeader div {
+	display: inline-block;
+}
+
+.pageHeader .title {
+	color: rgb(255, 50, 50);
+	font-size: 32pt;
+	margin-right: 36px;
+	margin-left: 24px;
+}
+
+.pageHeader .navItem {
+	font-size: 24pt;
+	margin-right: 16pt;
+}
+
+.pageHeader .navItem:hover {
+	cursor: pointer;
+	border-bottom: 2px dotted gray;
+}
+
+.pageHeader .navItem.selected {
+	border-bottom: 2px solid rgb(255, 50, 50);
+}
+
+.content {
+	flex: 1 1 auto;
+	font-family: sans-serif;
+}
+
+.content .simpleContent {
+	padding-left: 24px;
+	padding-top: 12px;
+	font-size: 18pt;
+}
+
+.content .paddedPage {
+	padding: 12px;
+	padding-left: 24px;
+}
+
+.content h1, .content h5 {
+	margin: 0px;
+}
+
+.content h5 {
+	color: rgb(50,50,50);
+	font-size: 12pt;
+}
+
+.content textarea {
+	width: 600px;
+	height: 300px;
+}
+
+.sidebar h5 {
+	font-size: 10pt;
+	margin-bottom: 6px;
+}
+
+.sidebar .section {
+	padding: 8px;
+	border-bottom: 1px solid black;
+}
+
+.evaluatePage {
+	display: flex;
+	flex-flow: row;
+	width: 100%;
+	height: 100%;
+}
+
+.evaluatePage .left {
+	flex: 0 1 250px;
+	overflow: auto;
+	border-right: 1px solid black;
+}
+
+.evaluatePage .right {
+	flex: 1 1 auto;
+}
+
+.sidebar select {
+	width: 100%;
+}
+
+.clusterPicker, .studentPicker {
+	font-size: 8pt;
+}
+
+.clusterPicker button, .ratings button {
+	width: 50%;
+	text-align: center;
+}
+
+.ratings .cheating.selected {
+	color: green;
+}
+
+.ratings .falsePos.selected {
+	color: red;
+}

@@ -6,17 +6,21 @@ var ViewState = (function() {
 	var cb = null;
 	var state = {
 		page: "spot",
-		args: null
+		args: {}
 	};
 
 	// Functions
 	var flush = function() {
-		cb({
-			state: state,
-			corpusData: corpusData,
-			spotData: spotData,
-			clusterDB: clusterDB
-		});
+		if(cb) {
+			window.requestAnimationFrame(function() {
+				cb({
+					state: state,
+					corpusData: corpusData,
+					spotData: spotData,
+					clusterDB: clusterDB
+				});
+			});
+		}
 	};
 
 	var start = function(callback) {
@@ -27,6 +31,7 @@ var ViewState = (function() {
 		$.get("/getcorpus", function(data) {
 			corpusData = data;
 			state.page = "evaluate";
+			state.args = {};
 
 			// Download the clusters
 			corpusData.detectors.map(function(detector) {
@@ -40,6 +45,11 @@ var ViewState = (function() {
 
 						// Flush the data
 						flush();
+					}).fail(function() {
+						// Something went wrong.
+						state.page = "error";
+						state.args = {};
+						flush();
 					});
 				});
 			});
@@ -47,6 +57,7 @@ var ViewState = (function() {
 			console.log("Failed to retreive corpus info.");
 
 			state.page = "import";
+			state.args = {};
 
 			flush();
 		});
@@ -93,8 +104,19 @@ var ViewState = (function() {
 
 	var setCluster = function(clusterKey, index, evaluation) {
 		// Update the DB
+		clusterDB[clusterKey][index].evaluation = evaluation;
 
 		// If not a spot check, send to server
+		if(state.page === "evaluate") {
+			var split = clusterKey.split("_");
+			var detector = split[2];
+			var assign = split[1];
+
+			var path = corpusData.corpus_path + detector + "/" + assign + "/clusters.json"
+			$.get("/updatecluster?path=" + path + "&index=" + index + "&evaluation=" + evaluation, function(data) {
+				// Do nothing.
+			});
+		}
 
 		// Flush changes back
 		flush();

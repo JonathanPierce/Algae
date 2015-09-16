@@ -191,7 +191,6 @@ var responders = {
 
         				// Gather all files, read JSON, concatenate
         				var files_list = get_file_list(job, assignment);
-        				console.log(files_list);
 
         				var json = files_list.map(function(file) {
         					data = fs.readFileSync(corpus_path + file);
@@ -291,16 +290,15 @@ var responders = {
     "/updatecluster": function(req, res) {
     	var parsed_url = url.parse(req.url, true);
         var file_path = parsed_url.query.path;
-        var index = parsed_url.query.index;
-        var evaluation = parsed_url.query.evaluation;
+        var index = parseInt(parsed_url.query.index, 10);
+        var evaluation = parseInt(parsed_url.query.evaluation, 10);
 
-        if(file_path && index && evaluation) {
+        if(file_path && typeof index !== 'undefined' && typeof evaluation !== "undefined") {
         	// If we are in the cache, just update
         	if (clusterCache[file_path]) {
         		clusterCache[file_path][index].evaluation = evaluation;
-
         		res.writeHead(200);
-        		res.end();
+        		res.end();	
         	} else {
         		// We should be in the cache. 404.
         		responders["404"](req, res);
