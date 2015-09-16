@@ -183,25 +183,11 @@ var Sidebar = React.createClass({
 			);
 		}
 
-		// Do we have a selected cluster?
+		// Do we have a selected cluster/students?
 		if(typeof args.cluster === 'undefined') {
 			// Select the first
 			args.cluster = 0;
-
-			// Update the UI
-			ViewState.setState(page, args);
-
-			return <noscript />;
-		}
-
-		// Do we have selected student(s)?
-		var cluster = clusters[args.cluster];
-		if(!args.students || args.students.length === 0) {
-			args.students = [];
-			// Just add the first two (or, one, if necessary)
-			for(var i = 0; i < Math.min(2, cluster.members.length); i++) {
-				args.students.push(i);
-			}
+			args.students = [0,1]
 
 			// Update the UI
 			ViewState.setState(page, args);
@@ -210,6 +196,7 @@ var Sidebar = React.createClass({
 		}
 
 		// We can now render the full sidebar!
+		var cluster = clusters[args.cluster];
 		return (
 			<div>
 				<AssignPicker data={data} />
@@ -233,9 +220,105 @@ var Sidebar = React.createClass({
 
 // Code view
 var CodeView = React.createClass({
+	getContent: function() {
+		var data = this.props.data;
+		var args = data.state.args;
+
+		// Do we have everything we need?
+		if(typeof args.detector === "undefined"
+			|| typeof args.assignment === "undefined"
+			|| typeof args.cluster === "undefined"
+			|| typeof args.students === "undefined") {
+			return (
+				<div>waiting for information...</div>
+			);
+		}
+
+		// Render a column for each student
+		var detector = data.corpusData.detectors[args.detector].name;
+		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+		var clusterKey = ViewState.getClusterKey(false, assignment, detector);
+		var clusters = data.clusterDB[clusterKey];
+		var cluster = clusters[args.cluster];
+
+		var displayClusters = [];
+		for(var i = 0; i < args.students.length; i++) {
+			if(cluster.members[args.students[i]]) {
+				displayClusters.push(cluster.members[args.students[i]]);
+			}
+		}
+
+		return displayClusters.map(function(member) {
+			var path = data.corpusData.corpus_path + "../../" + member.student + "/" + assignment + "/" + cluster.file;
+			var partner = member.partner ? member.partner : "no partner";
+			var semester = member.semester;
+			var headerString = member.student + " [" + semester + "] (" + partner + ")";
+
+			return (
+				<div className={"codeColumn" + (displayClusters.length > 1 ? "" : " wide")} key={path}>
+					<div className="header">{ headerString }</div>
+					<CodeText path={path} />
+				</div>
+			);
+		});
+	},
 	render: function() {
+		var codeViewContent = this.getContent();
+
 		return (
 			<div className="codeView right">
+			{ codeViewContent }
+			</div>
+		);
+	}
+});
+
+// Code text
+var CodeText = React.createClass({
+	getInitialState: function() {
+		return {
+			text: null
+		}
+	},
+	componentDidMount: function() {
+		this.getCode();
+	},
+	getCode: function() {
+		var that = this;
+		$.get("/file?path=" + this.props.path, function(code) {
+			that.setState({
+				text: code
+			});
+		}).fail(function() {
+			that.setState({
+				text: "something went wrong. :("
+			});
+		});
+	},
+	getHTML: function(text) {
+		// Clean up the text in prep for display.
+        text = text.replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;");
+        text = text.replace(/ /g, "&nbsp;");
+        text = text.replace(/</g, "&lt;");
+        text = text.replace(/>/g, "&gt;")
+        text = text.replace(/\n/g, "<br/>");
+        
+        return prettyPrintOne(text);
+	},
+	render: function() {
+		var content = null;
+
+		if(!this.state.text) {
+			content = <div>loading...</div>;
+		} else {
+			var prettyHTML = this.getHTML(this.state.text);
+
+			content = <div className="prettyprint code"><div dangerouslySetInnerHTML={{__html: prettyHTML}}></div></div>;
+		}
+
+		return (
+			<div className="codeText">
+				{ content }
 			</div>
 		);
 	}
@@ -250,6 +333,7 @@ var AssignPicker = React.createClass({
 		args.detector = e.target.selectedIndex;
 		args.assignment = 0;
 		args.cluster = 0;
+		args.students = [0,1];
 
 		ViewState.setState(data.state.page, args);
 	},
@@ -259,6 +343,7 @@ var AssignPicker = React.createClass({
 
 		args.assignment = e.target.selectedIndex;
 		args.cluster = 0;
+		args.students = [0,1];
 
 		ViewState.setState(data.state.page, args);
 	},
@@ -336,6 +421,7 @@ var ClusterPicker = React.createClass({
 		var data = this.props.data;
 		var args = this.props.data.state.args;
 		args.cluster = index;
+		args.students = [0,1];
 
 		ViewState.setState(data.state.page, args);
 	},
