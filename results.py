@@ -2,5 +2,5 @@
 import os
 
 print "IMPORTANT! Use Ctrl-C to flush data back to disk upon exit."
-os.system("nodejs viewer/server.js")
+os.system("node viewer/server.js")
 print "\nGoodbye!"

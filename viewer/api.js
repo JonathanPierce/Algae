@@ -20,26 +20,44 @@ var ViewState = (function() {
 	};
 
 	var start = function(callback) {
-		// Download the corpus data
-
-		// Download the clusters
-
-		// If present, set the page to evaluate
-
-		// Otherwise, set to import
-
 		// Install the cb
 		cb = callback;
 
-		// Flush the data
-		flush();
+		// Download the corpus data
+		$.get("/getcorpus", function(data) {
+			corpusData = data;
+			state.page = "evaluate";
+
+			// Download the clusters
+			corpusData.detectors.map(function(detector) {
+				detector.assignments.map(function(assign) {
+					// Grab the data
+					var path = corpusData.corpus_path + detector.name + "/" + assign + "/clusters.json";
+					var key = getClusterKey(false, assign, detector.name);
+
+					$.get("/getclusters?path=" + path, function(clusters) {
+						clusterDB[key] = clusters;
+
+						// Flush the data
+						flush();
+					});
+				});
+			});
+		}).fail(function() {
+			console.log("Failed to retreive corpus info.");
+
+			state.page = "import";
+
+			flush();
+		});
 	};
 
-	var importCorpus = function() {
+	var importCorpus = function(path) {
 		// Have the server perform the corpus import process
-
-		// Get the new corpus data JSON (by calling start again)
-		start(cb);
+		$.get("/importcorpus?path=" + path, function(data) {
+			// Get the new corpus data JSON (by calling start again)
+			start(cb);
+		});
 	};
 
 	var setSpotData = function(corpusPath, assignment, file) {
