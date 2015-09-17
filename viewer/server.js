@@ -177,6 +177,10 @@ var responders = {
         		var config = JSON.parse(config);
         		var corpus_path = config.corpusPath + "/__algae__/postprocessed/";
 
+        		// Wipe out the old data
+        		child_process.spawnSync("rm", ["-rf", config.corpusPath + "/__algae__/viewer"]);
+        		clusterCache = {};
+
         		// Create the import.json data
         		var import_json = {};
         		import_json.detectors = [];
@@ -230,8 +234,8 @@ var responders = {
 		        save_sync("import.json", JSON.stringify(import_json));
 
 		        // Return 200
-		        res.writeHead(200);
-		        res.end();
+		        res.writeHead(200, {'Content-Type': 'text/json'});
+        		res.end("{}");
         	} else {
         		// 404
         		responders["404"](req, res);
@@ -297,8 +301,8 @@ var responders = {
         	// If we are in the cache, just update
         	if (clusterCache[file_path]) {
         		clusterCache[file_path][index].evaluation = evaluation;
-        		res.writeHead(200);
-        		res.end();	
+        		res.writeHead(200, {'Content-Type': 'text/json'});
+        		res.end("{}");
         	} else {
         		// We should be in the cache. 404.
         		responders["404"](req, res);
@@ -307,6 +311,13 @@ var responders = {
         	// 404
             responders["404"](req, res);
         }
+    },
+
+    "/save": function(req, res) {
+    	save();
+
+    	res.writeHead(200, {'Content-Type': 'text/json'});
+        res.end("{}");
     }
 };
 
@@ -329,19 +340,23 @@ http.createServer(function (req, res) {
 var cleanup = function() {
 	console.log("\ncleaning up and exiting...");
 
+	save();
+
+	// Shutdown the server
+	process.exit();
+};
+
+var save = function() {
 	// Save the corpus cache to disk
 	for (var path in clusterCache) {
 		if(clusterCache.hasOwnProperty(path)) {
 			save_sync(path, JSON.stringify(clusterCache[path]))
 		}
 	}
-
-	// Shutdown the server
-	process.exit();
 };
 
 process.on("SIGINT", cleanup);
-// process.on("uncaughtException", cleanup);
+process.on("uncaughtException", cleanup);
 
 // Ready to go!
 console.log("Welcome to Algae Results Viewer!")

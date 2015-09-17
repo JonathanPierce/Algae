@@ -168,7 +168,7 @@ var ImportPage = React.createClass({
 			React.createElement(
 				"div",
 				null,
-				React.createElement("textarea", { value: JSON.stringify(this.props.data.corpusData, null, 2), readonly: "true" })
+				React.createElement("textarea", { value: JSON.stringify(this.props.data.corpusData, null, 2), readOnly: "true" })
 			)
 		);
 	}
@@ -290,6 +290,14 @@ var CodeView = React.createClass({
 		var clusterKey = ViewState.getClusterKey(false, assignment, detector);
 		var clusters = data.clusterDB[clusterKey];
 		var cluster = clusters[args.cluster];
+
+		if (!cluster) {
+			return React.createElement(
+				"div",
+				{ className: "simpleContent" },
+				"Nothing to see here. Move along."
+			);
+		}
 
 		var displayClusters = [];
 		for (var i = 0; i < args.students.length; i++) {
@@ -420,13 +428,11 @@ var AssignPicker = React.createClass({
 
 		return React.createElement(
 			"select",
-			{ onChange: this.switchDetector },
+			{ onChange: this.switchDetector, value: args.detector },
 			corpusData.detectors.map(function (detector, index) {
-				var selected = index === args.detector;
-
 				return React.createElement(
 					"option",
-					{ key: detector.name, selected: selected },
+					{ key: detector.name, value: index },
 					detector.name
 				);
 			})
@@ -441,13 +447,11 @@ var AssignPicker = React.createClass({
 
 		return React.createElement(
 			"select",
-			{ selectedIndex: args.assignment, onChange: this.switchAssignment },
+			{ selectedIndex: args.assignment, onChange: this.switchAssignment, value: args.assignment },
 			assignments.map(function (assignment, index) {
-				var selected = index === args.assignment;
-
 				return React.createElement(
 					"option",
-					{ key: assignment, selected: selected },
+					{ key: assignment, value: index },
 					assignment
 				);
 			})
@@ -500,14 +504,14 @@ var ClusterPicker = React.createClass({
 	renderClusters: function renderClusters(clusters, current) {
 		return React.createElement(
 			"select",
-			{ onChange: this.handleSelectChange },
+			{ onChange: this.handleSelectChange, value: current },
 			clusters.map(function (cluster, index) {
-				var selected = index === current;
-
+				var evalString = cluster.evaluation === 0 ? "?" : cluster.evaluation === 1 ? "+" : "-";
+				var clusterString = "(" + evalString + ") cluster " + (index + 1) + " | " + cluster.members[0].student;
 				return React.createElement(
 					"option",
-					{ key: index, selected: selected },
-					"cluster " + (index + 1)
+					{ key: index, value: index },
+					clusterString
 				);
 			})
 		);
@@ -597,14 +601,13 @@ var StudentPicker = React.createClass({
 
 		return React.createElement(
 			"select",
-			{ onChange: change },
+			{ onChange: change, value: students[0] },
 			cluster.members.map(function (member, index) {
-				var selected = index === students[0];
 				var disabled = index === second;
 
 				return React.createElement(
 					"option",
-					{ key: member.student, selected: selected, disabled: disabled },
+					{ key: member.student, value: index, disabled: disabled },
 					member.student
 				);
 			})
@@ -626,14 +629,13 @@ var StudentPicker = React.createClass({
 
 		return React.createElement(
 			"select",
-			{ onChange: change },
+			{ onChange: change, value: students[1] },
 			cluster.members.map(function (member, index) {
-				var selected = index === students[1];
 				var disabled = index === first;
 
 				return React.createElement(
 					"option",
-					{ key: member.student, selected: selected, disabled: disabled },
+					{ key: member.student, value: index, disabled: disabled },
 					member.student
 				);
 			})
@@ -725,7 +727,7 @@ var Ratings = React.createClass({
 			React.createElement(
 				"button",
 				{ className: falsePosClass, onClick: this.setFalsePos },
-				"False Positive"
+				"False Pos"
 			)
 		);
 	}

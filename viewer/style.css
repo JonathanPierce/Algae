@@ -102,16 +102,16 @@ html, body {
 }
 
 .evaluatePage .left {
-	width: 250px;
+	width: 200px;
 	height: 100%;
 	border-right: 1px solid black;
 }
 
 .evaluatePage .right {
-	width: calc(100% - 250px);
+	width: calc(100% - 200px);
 	height: calc(100% - 60px);
 	position: absolute;
-	left: 250px;
+	left: 200px;
 	top: 60px;
 }
 

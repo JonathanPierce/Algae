@@ -129,7 +129,7 @@ var ImportPage = React.createClass({
 				<br/>
 				<h5>current corpus:</h5>
 				<div>
-					<textarea value={JSON.stringify(this.props.data.corpusData, null, 2)} readonly="true" />
+					<textarea value={JSON.stringify(this.props.data.corpusData, null, 2)} readOnly="true" />
 				</div>
 			</div>
 		);
@@ -240,6 +240,12 @@ var CodeView = React.createClass({
 		var clusterKey = ViewState.getClusterKey(false, assignment, detector);
 		var clusters = data.clusterDB[clusterKey];
 		var cluster = clusters[args.cluster];
+
+		if(!cluster) {
+			return (
+				<div className="simpleContent">Nothing to see here. Move along.</div>
+			);
+		}
 
 		var displayClusters = [];
 		for(var i = 0; i < args.students.length; i++) {
@@ -353,13 +359,11 @@ var AssignPicker = React.createClass({
 		var args = data.state.args;
 
 		return (
-			<select onChange={this.switchDetector}>
+			<select onChange={this.switchDetector} value={args.detector}>
 			{
 				corpusData.detectors.map(function(detector, index) {
-					var selected = index === args.detector;
-
 					return (
-						<option key={detector.name} selected={selected}>{detector.name}</option>
+						<option key={detector.name} value={index}>{detector.name}</option>
 					);
 				})
 			}
@@ -374,13 +378,11 @@ var AssignPicker = React.createClass({
 		var assignments = detector.assignments;
 
 		return (
-			<select selectedIndex={args.assignment} onChange={this.switchAssignment}>
+			<select selectedIndex={args.assignment} onChange={this.switchAssignment} value={args.assignment}>
 			{
 				assignments.map(function(assignment, index) {
-					var selected = index === args.assignment;
-
 					return (
-						<option key={assignment} selected={selected}>{assignment}</option>
+						<option key={assignment} value={index}>{assignment}</option>
 					);
 				})
 			}
@@ -427,12 +429,12 @@ var ClusterPicker = React.createClass({
 	},
 	renderClusters: function(clusters, current) {
 		return (
-			<select onChange={this.handleSelectChange}>
+			<select onChange={this.handleSelectChange} value={current}>
 				{
 					clusters.map(function(cluster, index) {
-						var selected = index === current;
-
-						return <option key={index} selected={selected}>{"cluster " + (index + 1)}</option>;
+						var evalString = cluster.evaluation === 0 ? "?" : (cluster.evaluation === 1 ? "+" : "-");
+						var clusterString = "(" + evalString + ") cluster " + (index + 1) + " | " + cluster.members[0].student;
+						return <option key={index} value={index}>{clusterString}</option>;
 					})
 				}
 			</select>
@@ -484,14 +486,13 @@ var StudentPicker = React.createClass({
 		}
 
 		return (
-			<select onChange={change}>
+			<select onChange={change} value={students[0]}>
 				{
 					cluster.members.map(function(member, index) {
-						var selected = index === students[0];
 						var disabled = index === second;
 
 						return (
-							<option key={member.student} selected={selected} disabled={disabled}>{member.student}</option>
+							<option key={member.student} value={index} disabled={disabled}>{member.student}</option>
 						);
 					})
 				}
@@ -513,14 +514,13 @@ var StudentPicker = React.createClass({
 		}
 
 		return (
-			<select onChange={change}>
+			<select onChange={change} value={students[1]}>
 				{
 					cluster.members.map(function(member, index) {
-						var selected = index === students[1];
 						var disabled = index === first;
 
 						return (
-							<option key={member.student} selected={selected} disabled={disabled}>{member.student}</option>
+							<option key={member.student} value={index} disabled={disabled}>{member.student}</option>
 						);
 					})
 				}
@@ -590,7 +590,7 @@ var Ratings = React.createClass({
 			<div className="ratings section">
 				<h5>Evaluation:</h5>
 				<button className={cheatingClass} onClick={this.setCheating}>Cheating</button>
-				<button className={falsePosClass} onClick={this.setFalsePos}>False Positive</button>
+				<button className={falsePosClass} onClick={this.setFalsePos}>False Pos</button>
 			</div>
 		);
 	}
