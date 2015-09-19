@@ -144,6 +144,11 @@ var AnalyzePage = React.createClass({
 });
 
 // Spot check import
+var SpotCheckImport = React.createClass({
+	render: function() {
+		return null;
+	}
+});
 
 // Sidebar
 var Sidebar = React.createClass({
@@ -160,7 +165,7 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have a selected detector and assignment?
-		if(typeof args.detector === 'undefined' || typeof args.assignment === 'undefined') {
+		if(page === "evaluation" && (typeof args.detector === 'undefined' || typeof args.assignment === 'undefined')) {
 			// Select the first one
 			args.detector = 0;
 			args.assignment = 0;
@@ -308,7 +313,7 @@ var CodeText = React.createClass({
         text = text.replace(/</g, "&lt;");
         text = text.replace(/>/g, "&gt;")
         text = text.replace(/\n/g, "<br/>");
-        
+
         return prettyPrintOne(text);
 	},
 	render: function() {
@@ -432,6 +437,7 @@ var ClusterPicker = React.createClass({
 			<select onChange={this.handleSelectChange} value={current}>
 				{
 					clusters.map(function(cluster, index) {
+						cluster.evaluation = cluster.evaluation || 0; // For spot check
 						var evalString = cluster.evaluation === 0 ? "?" : (cluster.evaluation === 1 ? "+" : "-");
 						var clusterString = "(" + evalString + ") cluster " + (index + 1) + " | " + cluster.members[0].student;
 						return <option key={index} value={index}>{clusterString}</option>;
@@ -596,6 +602,16 @@ var Ratings = React.createClass({
 	}
 });
 
-// Export button
+// Export/Save/Reimport button
+var ExportSave = React.createClass({
+	render: function() {
+		return null;
+	}
+});
 
 // Export view
+var ExportPage = React.createClass({
+	render: function() {
+		return null;
+	}
+});

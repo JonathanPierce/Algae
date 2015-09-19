@@ -6,7 +6,7 @@ A platform for running code plagiarism (cheating) detection software on large da
 
 1. Clone the algae repo.
 2. Set up a corpus. See the section below.
-3. Make sure that clang and libclang are installed (along with python binding). Many built-in processors require this.
+3. Make sure that clang and libclang are installed (along with python binding) (sudo apt-get install clang libclang-dev && sudo pip install clang). Many built-in processors require this.
 4. Set up your detectors and configuration file.
 
 Then, run algae as follows from your algae folder:

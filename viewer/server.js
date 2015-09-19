@@ -23,7 +23,7 @@ var get_file = function (path, callback) {
             callback(null);
             return;
         }
-        
+
         // Return the data
         callback(data);
     })
@@ -130,11 +130,11 @@ var responders = {
     "/file": function (req, res) {
         var parsed_url = url.parse(req.url, true);
         var file_path = parsed_url.query.path;
-        
+
         if (file_path) {
             // Set the correct file type
             var file_type = get_mime(file_path);
-            
+
             // Grab the file and return it
             get_file(file_path, function (data) {
                 if (data) {
@@ -144,14 +144,14 @@ var responders = {
                     // 404
                     responders["404"](req, res);
                 }
-                
+
             });
         } else {
             // 404
             responders["404"](req, res);
         }
     },
-    
+
     // Return the home page HTML
     "/": function (req, res) {
         get_file("viewer/index.html", function (data) {
@@ -204,7 +204,7 @@ var responders = {
         				var concatenated = json.reduce(function(prev, current) {
         					return prev.concat(current);
         				}, []);
- 
+
 				        // Add an evalaution metric
 				        var complete = concatenated.map(function(data) {
 				        	data.evaluation = 0;
@@ -246,6 +246,10 @@ var responders = {
     // Request corpus info
     "/getcorpus": function(req, res) {
     	get_corpus(function(data) {
+            if(!data) {
+                return responders["404"](req, res);
+            }
+
     		res.writeHead(200, { 'Content-Type': 'text/json' });
             res.end(JSON.stringify(data));
     	});
@@ -255,11 +259,11 @@ var responders = {
     "/getclusters": function(req, res) {
     	var parsed_url = url.parse(req.url, true);
         var file_path = parsed_url.query.path;
-        
+
         if (file_path) {
             // Set the correct file type
             var file_type = get_mime(file_path);
-            
+
             // Grab the file and return it
             if(!clusterCache[file_path]) {
             	// Grab the file from disk
@@ -275,7 +279,7 @@ var responders = {
 	                } else {
 	                    // 404
 	                    responders["404"](req, res);
-	                }  
+	                }
 	            });
             } else {
             	// Grab from the cache
@@ -324,7 +328,7 @@ var responders = {
 // The main server listener
 http.createServer(function (req, res) {
     var parsed_url = url.parse(req.url);
-    
+
     var responder = responders[parsed_url.pathname];
     if (responder) {
         // Respond appropriately
@@ -356,7 +360,7 @@ var save = function() {
 };
 
 process.on("SIGINT", cleanup);
-process.on("uncaughtException", cleanup);
+// process.on("uncaughtException", cleanup);
 
 // Ready to go!
 console.log("Welcome to Algae Results Viewer!")

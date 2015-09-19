@@ -10,7 +10,7 @@ import clang.enumerations
 import csv
 
 # set the config
-clang.cindex.Config.set_library_path("/usr/lib/x86_64-linux-gnu")
+clang.cindex.Config.set_library_path("/usr/lib")
 
 class Tokenizer:
     # creates the object, does the inital parse
