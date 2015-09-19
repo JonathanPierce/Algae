@@ -34,18 +34,13 @@ var Application = React.createClass({
 			);
 		}
 
-		// Render an error screen
-		if (page === "error") {
-			return React.createElement(
-				"div",
-				{ className: "simpleContent" },
-				"Something went wrong... try again..."
-			);
-		}
-
 		// Render the import page
 		if (page === "import") {
 			return React.createElement(ImportPage, { data: this.state });
+		}
+
+		if (page === "spot check" && !this.state.spotData) {
+			return React.createElement(SpotCheckImport, { data: this.state });
 		}
 
 		if (page === "spot check" || page === "evaluate") {
@@ -55,6 +50,13 @@ var Application = React.createClass({
 		if (page === "analyze") {
 			return React.createElement(AnalyzePage, { data: this.state });
 		}
+
+		// Render an error screen
+		return React.createElement(
+			"div",
+			{ className: "simpleContent" },
+			"Something went wrong... try again..."
+		);
 	},
 
 	render: function render() {
@@ -147,7 +149,7 @@ var ImportPage = React.createClass({
 			React.createElement(
 				"h5",
 				null,
-				"corpus path:"
+				"config path:"
 			),
 			React.createElement(
 				"div",
@@ -191,8 +193,53 @@ var AnalyzePage = React.createClass({
 var SpotCheckImport = React.createClass({
 	displayName: "SpotCheckImport",
 
+	"import": function _import() {
+		var config = this.refs.inputConfig.getDOMNode().value;
+		var assign = this.refs.inputAssign.getDOMNode().value;
+		var file = this.refs.inputFile.getDOMNode().value;
+
+		ViewState.setSpotData(config, assign, file);
+	},
 	render: function render() {
-		return null;
+		return React.createElement(
+			"div",
+			{ className: "spotCheckImport paddedPage" },
+			React.createElement(
+				"h1",
+				null,
+				"Spot Check Import"
+			),
+			React.createElement(
+				"p",
+				null,
+				"Spot checking is useful for tuning paremeters or other situations where you went to view results without doing a full import. Results are only saved in RAM, so be sure to export if you want to keep them."
+			),
+			React.createElement(
+				"h5",
+				null,
+				"config path:"
+			),
+			React.createElement("input", { type: "text", ref: "inputConfig", placeholder: "example: config.json" }),
+			React.createElement(
+				"h5",
+				null,
+				"assignment:"
+			),
+			React.createElement("input", { type: "text", ref: "inputAssign", placeholder: "example: Lab12" }),
+			React.createElement(
+				"h5",
+				null,
+				"postprocessed path:"
+			),
+			React.createElement("input", { type: "text", ref: "inputFile", placeholder: "example: obfuscation_results.json" }),
+			React.createElement("br", null),
+			React.createElement("br", null),
+			React.createElement(
+				"button",
+				{ onClick: this["import"] },
+				"Go"
+			)
+		);
 	}
 });
 
@@ -206,7 +253,7 @@ var Sidebar = React.createClass({
 		var args = data.state.args;
 
 		// Do we need to import
-		if (!data.corpusData) {
+		if (!data.corpusData && page === "evaluate") {
 			return React.createElement(
 				"div",
 				null,
@@ -215,7 +262,7 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have a selected detector and assignment?
-		if (page === "evaluation" && (typeof args.detector === 'undefined' || typeof args.assignment === 'undefined')) {
+		if (page === "evaluate" && (typeof args.detector === 'undefined' || typeof args.assignment === 'undefined')) {
 			// Select the first one
 			args.detector = 0;
 			args.assignment = 0;
@@ -227,9 +274,18 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have the proper clusters?
-		var detector = data.corpusData.detectors[args.detector].name;
-		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
-		var clusterKey = ViewState.getClusterKey(false, assignment, detector);
+		var detector, assignment, clusterKey;
+
+		if (page === "evaluate") {
+			detector = data.corpusData.detectors[args.detector].name;
+			assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+			clusterKey = ViewState.getClusterKey(false, assignment, detector);
+		}
+		if (page === "spot check") {
+			detector = data.spotData.file;
+			assignment = data.spotData.assignment;
+			clusterKey = ViewState.getClusterKey(true, assignment, detector);
+		}
 
 		var clusters = data.clusterDB[clusterKey];
 		if (!clusters) {
@@ -260,7 +316,8 @@ var Sidebar = React.createClass({
 			React.createElement(AssignPicker, { data: data }),
 			React.createElement(ClusterPicker, { clusters: clusters, data: data, cluster: cluster }),
 			React.createElement(StudentPicker, { cluster: cluster, data: data }),
-			React.createElement(Ratings, { cluster: cluster, data: data, clusterKey: clusterKey })
+			React.createElement(Ratings, { cluster: cluster, data: data, clusterKey: clusterKey }),
+			React.createElement(ExportSave, { data: data })
 		);
 	},
 	render: function render() {
@@ -281,9 +338,10 @@ var CodeView = React.createClass({
 	getContent: function getContent() {
 		var data = this.props.data;
 		var args = data.state.args;
+		var page = data.state.page;
 
 		// Do we have everything we need?
-		if (typeof args.detector === "undefined" || typeof args.assignment === "undefined" || typeof args.cluster === "undefined" || typeof args.students === "undefined") {
+		if (typeof args.detector === "undefined" && data.state.page === "evaluate" || typeof args.assignment === "undefined" && data.state.page === "evaluate" || typeof args.cluster === "undefined" || typeof args.students === "undefined") {
 			return React.createElement(
 				"div",
 				null,
@@ -292,9 +350,19 @@ var CodeView = React.createClass({
 		}
 
 		// Render a column for each student
-		var detector = data.corpusData.detectors[args.detector].name;
-		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
-		var clusterKey = ViewState.getClusterKey(false, assignment, detector);
+		var detector, assignment, clusterKey;
+
+		if (page === "evaluate") {
+			detector = data.corpusData.detectors[args.detector].name;
+			assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+			clusterKey = ViewState.getClusterKey(false, assignment, detector);
+		}
+		if (page === "spot check") {
+			detector = data.spotData.file;
+			assignment = data.spotData.assignment;
+			clusterKey = ViewState.getClusterKey(true, assignment, detector);
+		}
+
 		var clusters = data.clusterDB[clusterKey];
 		var cluster = clusters[args.cluster];
 
@@ -465,6 +533,16 @@ var AssignPicker = React.createClass({
 		);
 	},
 	render: function render() {
+		var data = this.props.data;
+
+		if (data.state.page === "spot check") {
+			return React.createElement(
+				"div",
+				{ className: "assignPicker section" },
+				"Spot checking " + data.spotData.file + " from " + data.spotData.assignment + "."
+			);
+		}
+
 		var detectorPicker = this.renderDetectorPicker();
 		var assignmentPicker = this.renderAssignmentPicker();
 
@@ -745,8 +823,53 @@ var Ratings = React.createClass({
 var ExportSave = React.createClass({
 	displayName: "ExportSave",
 
+	"export": function _export() {},
+	reimport: function reimport() {},
+	save: function save() {
+		$.get("/save", function () {});
+	},
 	render: function render() {
-		return null;
+		var data = this.props.data;
+		var page = data.state.page;
+
+		if (page === "evaluate") {
+			return React.createElement(
+				"div",
+				{ className: "exportSave section" },
+				React.createElement(
+					"h5",
+					null,
+					"Other options:"
+				),
+				React.createElement(
+					"button",
+					{ onClick: this.save },
+					"save data to disk"
+				)
+			);
+		}
+
+		if (page === "spot check") {
+			return React.createElement(
+				"div",
+				{ className: "exportSave section" },
+				React.createElement(
+					"h5",
+					null,
+					"Other options:"
+				),
+				React.createElement(
+					"button",
+					{ onClick: this.reimport },
+					"import new"
+				),
+				React.createElement(
+					"button",
+					{ onClick: this["export"] },
+					"export data"
+				)
+			);
+		}
 	}
 });
 

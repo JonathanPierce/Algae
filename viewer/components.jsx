@@ -28,18 +28,17 @@ var Application = React.createClass({
 			);
 		}
 
-		// Render an error screen
-		if(page === "error") {
-			return (
-				<div className="simpleContent">Something went wrong... try again...</div>
-			);
-		}
-
 		// Render the import page
 		if(page === "import") {
 			return (
 				<ImportPage data={this.state} />
 			);
+		}
+
+		if(page === "spot check" && !this.state.spotData) {
+			return (
+				<SpotCheckImport data={this.state} />
+			)
 		}
 
 		if(page === "spot check" || page === "evaluate") {
@@ -53,6 +52,11 @@ var Application = React.createClass({
 				<AnalyzePage data={this.state} />
 			);
 		}
+
+		// Render an error screen
+		return (
+			<div className="simpleContent">Something went wrong... try again...</div>
+		);
 	},
 
 	render: function() {
@@ -121,7 +125,7 @@ var ImportPage = React.createClass({
 			<div className="importPage paddedPage">
 				<h1>Import</h1>
 				<p>You need to import data into the Algae results viewer before you can view it. Simple submit the name of the config file (typically config.json) that you want to view after running Algae on its entirety. Note that importing data will overwrite any old imported data.</p>
-				<h5>corpus path:</h5>
+				<h5>config path:</h5>
 				<div>
 					<input type="text" ref="inputBox" placeholder="example: config.json" />
 					<button onClick={this.import}>Go</button>
@@ -145,8 +149,28 @@ var AnalyzePage = React.createClass({
 
 // Spot check import
 var SpotCheckImport = React.createClass({
+	import: function() {
+		var config = this.refs.inputConfig.getDOMNode().value;
+		var assign = this.refs.inputAssign.getDOMNode().value;
+		var file = this.refs.inputFile.getDOMNode().value;
+
+		ViewState.setSpotData(config, assign, file);
+	},
 	render: function() {
-		return null;
+		return (
+			<div className="spotCheckImport paddedPage">
+				<h1>Spot Check Import</h1>
+				<p>Spot checking is useful for tuning paremeters or other situations where you went to view results without doing a full import. Results are only saved in RAM, so be sure to export if you want to keep them.</p>
+				<h5>config path:</h5>
+				<input type="text" ref="inputConfig" placeholder="example: config.json" />
+				<h5>assignment:</h5>
+				<input type="text" ref="inputAssign" placeholder="example: Lab12" />
+				<h5>postprocessed path:</h5>
+				<input type="text" ref="inputFile" placeholder="example: obfuscation_results.json" />
+				<br/><br/>
+				<button onClick={this.import}>Go</button>
+			</div>
+		);
 	}
 });
 
@@ -158,14 +182,14 @@ var Sidebar = React.createClass({
 		var args = data.state.args;
 
 		// Do we need to import
-		if(!data.corpusData) {
+		if(!data.corpusData && page === "evaluate") {
 			return (
 				<div>You need to import data first.</div>
 			)
 		}
 
 		// Do we have a selected detector and assignment?
-		if(page === "evaluation" && (typeof args.detector === 'undefined' || typeof args.assignment === 'undefined')) {
+		if(page === "evaluate" && (typeof args.detector === 'undefined' || typeof args.assignment === 'undefined')) {
 			// Select the first one
 			args.detector = 0;
 			args.assignment = 0;
@@ -177,9 +201,18 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have the proper clusters?
-		var detector = data.corpusData.detectors[args.detector].name;
-		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
-		var clusterKey = ViewState.getClusterKey(false, assignment, detector);
+		var detector, assignment, clusterKey;
+
+		if(page === "evaluate") {
+			detector = data.corpusData.detectors[args.detector].name;
+			assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+			clusterKey = ViewState.getClusterKey(false, assignment, detector);
+		}
+		if(page === "spot check") {
+			detector = data.spotData.file;
+			assignment = data.spotData.assignment;
+			clusterKey = ViewState.getClusterKey(true, assignment, detector);
+		}
 
 		var clusters = data.clusterDB[clusterKey];
 		if(!clusters) {
@@ -208,6 +241,7 @@ var Sidebar = React.createClass({
 				<ClusterPicker clusters={clusters} data={data} cluster={cluster} />
 				<StudentPicker cluster={cluster} data={data} />
 				<Ratings cluster={cluster} data={data} clusterKey={clusterKey} />
+				<ExportSave data={data} />
 			</div>
 		);
 
@@ -228,10 +262,11 @@ var CodeView = React.createClass({
 	getContent: function() {
 		var data = this.props.data;
 		var args = data.state.args;
+		var page = data.state.page;
 
 		// Do we have everything we need?
-		if(typeof args.detector === "undefined"
-			|| typeof args.assignment === "undefined"
+		if((typeof args.detector === "undefined" && data.state.page === "evaluate")
+			|| (typeof args.assignment === "undefined" && data.state.page === "evaluate")
 			|| typeof args.cluster === "undefined"
 			|| typeof args.students === "undefined") {
 			return (
@@ -240,9 +275,19 @@ var CodeView = React.createClass({
 		}
 
 		// Render a column for each student
-		var detector = data.corpusData.detectors[args.detector].name;
-		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
-		var clusterKey = ViewState.getClusterKey(false, assignment, detector);
+		var detector, assignment, clusterKey;
+
+		if(page === "evaluate") {
+			detector = data.corpusData.detectors[args.detector].name;
+			assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+			clusterKey = ViewState.getClusterKey(false, assignment, detector);
+		}
+		if(page === "spot check") {
+			detector = data.spotData.file;
+			assignment = data.spotData.assignment;
+			clusterKey = ViewState.getClusterKey(true, assignment, detector);
+		}
+
 		var clusters = data.clusterDB[clusterKey];
 		var cluster = clusters[args.cluster];
 
@@ -395,6 +440,18 @@ var AssignPicker = React.createClass({
 		);
 	},
 	render: function() {
+		var data = this.props.data;
+
+		if(data.state.page === "spot check") {
+			return (
+				<div className="assignPicker section">
+					{
+						"Spot checking " + data.spotData.file + " from " + data.spotData.assignment + "."
+					}
+				</div>
+			);
+		}
+
 		var detectorPicker = this.renderDetectorPicker();
 		var assignmentPicker = this.renderAssignmentPicker();
 
@@ -604,8 +661,37 @@ var Ratings = React.createClass({
 
 // Export/Save/Reimport button
 var ExportSave = React.createClass({
+	export: function() {
+
+	},
+	reimport: function() {
+
+	},
+	save: function() {
+		$.get("/save", function() {});
+	},
 	render: function() {
-		return null;
+		var data = this.props.data;
+		var page = data.state.page;
+
+		if(page === "evaluate") {
+			return (
+				<div className="exportSave section">
+					<h5>Other options:</h5>
+					<button onClick={this.save}>save data to disk</button>
+				</div>
+			)
+		}
+
+		if(page === "spot check") {
+			return (
+				<div className="exportSave section">
+					<h5>Other options:</h5>
+					<button onClick={this.reimport}>import new</button>
+					<button onClick={this.export}>export data</button>
+				</div>
+			)
+		}
 	}
 });
 

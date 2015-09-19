@@ -72,6 +72,10 @@ html, body {
 	padding-left: 24px;
 }
 
+.paddedPage p {
+	max-width: 40%;
+}
+
 .content h1, .content h5 {
 	margin: 0px;
 }
@@ -94,6 +98,11 @@ html, body {
 .sidebar .section {
 	padding: 8px;
 	border-bottom: 1px solid black;
+}
+
+.assignPicker {
+	word-wrap: break-word;
+	font-size: 10pt;
 }
 
 .evaluatePage {
@@ -166,4 +175,8 @@ html, body {
 	background-color: white;
 	word-wrap: break-word;
 	border: none;
+}
+
+.exportSave button {
+	width: 100%;
 }

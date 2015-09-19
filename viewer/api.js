@@ -71,20 +71,38 @@ var ViewState = (function() {
 		});
 	};
 
-	var setSpotData = function(corpusPath, assignment, file) {
-		// Set the spot data
-		spotData = {
-			corpusPath: corpusPath,
-			assignment: assignment,
-			file: file
-		};
+	var setSpotData = function(configPath, assignment, file) {
+		// Get the config
+		$.get("/file?path=" + configPath, function(config) {
+			var path = config.corpusPath + "/__algae__/postprocessed/" + assignment + "/" + file;
 
-		// Downlaod the clusters
+			// Get the clusters
+			$.get("/file?path=" + path, function(clusters) {
+				// Update the cluster DB
+				var clusterKey = getClusterKey(true, assignment, file);
+				clusterDB[clusterKey] = clusters;
 
-		// Update the cluster DB
+				// Set the spot data
+				spotData = {
+					corpusPath: config.corpusPath,
+					assignment: assignment,
+					file: file
+				};
 
-		// Flush
-		flush();
+				// Flush
+				flush();
+			}).fail(function() {
+				// Something went wrong.
+				state.page = "error";
+				state.args = {};
+				flush();
+			});
+		}).fail(function() {
+			// Something went wrong.
+			state.page = "error";
+			state.args = {};
+			flush();
+		});
 	};
 
 	var setState = function(page, args) {
