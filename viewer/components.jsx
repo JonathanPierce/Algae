@@ -725,6 +725,7 @@ var ExportSave = React.createClass({
 				<div className="exportSave section">
 					<h5>Other options:</h5>
 					<button onClick={this.save}>save data to disk</button>
+					<button onClick={this.export}>export data</button>
 				</div>
 			)
 		}

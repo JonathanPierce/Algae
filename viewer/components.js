@@ -891,6 +891,11 @@ var ExportSave = React.createClass({
 					"button",
 					{ onClick: this.save },
 					"save data to disk"
+				),
+				React.createElement(
+					"button",
+					{ onClick: this["export"] },
+					"export data"
 				)
 			);
 		}
