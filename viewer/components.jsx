@@ -53,6 +53,12 @@ var Application = React.createClass({
 			);
 		}
 
+		if(page === "export") {
+			return (
+				<ExportPage data={this.state} />
+			);
+		}
+
 		// Render an error screen
 		return (
 			<div className="simpleContent">Something went wrong... try again...</div>
@@ -241,7 +247,7 @@ var Sidebar = React.createClass({
 				<ClusterPicker clusters={clusters} data={data} cluster={cluster} />
 				<StudentPicker cluster={cluster} data={data} />
 				<Ratings cluster={cluster} data={data} clusterKey={clusterKey} />
-				<ExportSave data={data} />
+				<ExportSave data={data} clusters={clusters} />
 			</div>
 		);
 
@@ -662,10 +668,12 @@ var Ratings = React.createClass({
 // Export/Save/Reimport button
 var ExportSave = React.createClass({
 	export: function() {
-
+		ViewState.setState("export", {
+			clusters: this.props.clusters
+		});
 	},
 	reimport: function() {
-
+		ViewState.unsetSpotData();
 	},
 	save: function() {
 		$.get("/save", function() {});
@@ -697,7 +705,59 @@ var ExportSave = React.createClass({
 
 // Export view
 var ExportPage = React.createClass({
+	getText: function(clusters) {
+		var final = [];
+
+		// Get the cheating clusters
+		for(var i = 0; i < clusters.length; i++) {
+			var cluster = clusters[i];
+			if(cluster.evaluation === 1) {
+				final.push(cluster);
+			}
+		}
+
+		// Get a unique student list for each semester
+		var semesters = {};
+
+		for(var i = 0; i < final.length; i++) {
+			var members = final[i].members;
+
+			for(var j = 0; j < members.length; j++) {
+				var member = members[j];
+				var semester = members[j].semester;
+
+				if(!semesters[semester]) {
+					semesters[semester] = [];
+				}
+
+				// Implicate the student
+				if(semesters[semester].indexOf(member.student) === -1) {
+					semesters[semester].push(member.student);
+				}
+
+				// Implicate the partner (if any)
+				if(member.partner && semesters[semester].indexOf(member.partner) === -1) {
+					semesters[semester].push(member.partner);
+				}
+			}
+		}
+
+		var obj = {};
+		obj.count = final.length;
+		obj.clusters = final;
+		obj.students = semesters;
+		return JSON.stringify(obj, null, 2);
+	},
 	render: function() {
-		return null;
+		var clusters = this.props.data.state.args.clusters;
+
+		var text = this.getText(clusters);
+
+		return (
+			<div className="exportPage paddedPage">
+				<h1>Export Data</h1>
+				<textarea defaultValue={text}/>
+			</div>
+		);
 	}
 });

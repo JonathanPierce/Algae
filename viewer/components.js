@@ -51,6 +51,10 @@ var Application = React.createClass({
 			return React.createElement(AnalyzePage, { data: this.state });
 		}
 
+		if (page === "export") {
+			return React.createElement(ExportPage, { data: this.state });
+		}
+
 		// Render an error screen
 		return React.createElement(
 			"div",
@@ -317,7 +321,7 @@ var Sidebar = React.createClass({
 			React.createElement(ClusterPicker, { clusters: clusters, data: data, cluster: cluster }),
 			React.createElement(StudentPicker, { cluster: cluster, data: data }),
 			React.createElement(Ratings, { cluster: cluster, data: data, clusterKey: clusterKey }),
-			React.createElement(ExportSave, { data: data })
+			React.createElement(ExportSave, { data: data, clusters: clusters })
 		);
 	},
 	render: function render() {
@@ -823,8 +827,14 @@ var Ratings = React.createClass({
 var ExportSave = React.createClass({
 	displayName: "ExportSave",
 
-	"export": function _export() {},
-	reimport: function reimport() {},
+	"export": function _export() {
+		ViewState.setState("export", {
+			clusters: this.props.clusters
+		});
+	},
+	reimport: function reimport() {
+		ViewState.unsetSpotData();
+	},
 	save: function save() {
 		$.get("/save", function () {});
 	},
@@ -877,8 +887,64 @@ var ExportSave = React.createClass({
 var ExportPage = React.createClass({
 	displayName: "ExportPage",
 
+	getText: function getText(clusters) {
+		var final = [];
+
+		// Get the cheating clusters
+		for (var i = 0; i < clusters.length; i++) {
+			var cluster = clusters[i];
+			if (cluster.evaluation === 1) {
+				final.push(cluster);
+			}
+		}
+
+		// Get a unique student list for each semester
+		var semesters = {};
+
+		for (var i = 0; i < final.length; i++) {
+			var members = final[i].members;
+
+			for (var j = 0; j < members.length; j++) {
+				var member = members[j];
+				var semester = members[j].semester;
+
+				if (!semesters[semester]) {
+					semesters[semester] = [];
+				}
+
+				// Implicate the student
+				if (semesters[semester].indexOf(member.student) === -1) {
+					semesters[semester].push(member.student);
+				}
+
+				// Implicate the partner (if any)
+				if (member.partner && semesters[semester].indexOf(member.partner) === -1) {
+					semesters[semester].push(member.partner);
+				}
+			}
+		}
+
+		var obj = {};
+		obj.count = final.length;
+		obj.clusters = final;
+		obj.students = semesters;
+		return JSON.stringify(obj, null, 2);
+	},
 	render: function render() {
-		return null;
+		var clusters = this.props.data.state.args.clusters;
+
+		var text = this.getText(clusters);
+
+		return React.createElement(
+			"div",
+			{ className: "exportPage paddedPage" },
+			React.createElement(
+				"h1",
+				null,
+				"Export Data"
+			),
+			React.createElement("textarea", { defaultValue: text })
+		);
 	}
 });
 

@@ -105,6 +105,11 @@ var ViewState = (function() {
 		});
 	};
 
+	var unsetSpotData = function() {
+		spotData = null;
+		flush();
+	}
+
 	var setState = function(page, args) {
 		state = {
 			page: page,
@@ -145,6 +150,7 @@ var ViewState = (function() {
 		start: start,
 		importCorpus: importCorpus,
 		setSpotData: setSpotData,
+		unsetSpotData: unsetSpotData,
 		setState: setState,
 		getClusterKey: getClusterKey,
 		setCluster: setCluster

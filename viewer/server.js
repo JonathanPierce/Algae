@@ -360,7 +360,7 @@ var save = function() {
 };
 
 process.on("SIGINT", cleanup);
-// process.on("uncaughtException", cleanup);
+process.on("uncaughtException", cleanup);
 
 // Ready to go!
 console.log("Welcome to Algae Results Viewer!")
