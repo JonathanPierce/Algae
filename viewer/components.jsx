@@ -514,6 +514,7 @@ var ClusterPicker = React.createClass({
 		var clusters = this.props.clusters;
 		var cluster = this.props.cluster;
 		var args = data.state.args;
+		var clusterIndex = data.state.args.cluster;
 
 		if(clusters.length === 0) {
 			return (
@@ -529,8 +530,8 @@ var ClusterPicker = React.createClass({
 				{ renderedClusters }
 				<br/>
 				<div>
-					<button onClick={this.prev}>Prev</button>
-					<button onClick={this.next}>Next</button>
+					<button onClick={this.prev} disabled={clusterIndex === 0}>Prev</button>
+					<button onClick={this.next} disabled={clusterIndex === (clusters.length - 1)}>Next</button>
 				</div>
 				<br/>
 				<div>{"Cluster: " + (args.cluster + 1) + "/" + clusters.length}</div>
@@ -639,6 +640,40 @@ var Ratings = React.createClass({
 			ViewState.setCluster(this.props.clusterKey, index, 2);
 		}
 	},
+	getIndexInfo: function() {
+		var data = this.props.data;
+		var page = data.state.page;
+		var args = data.state.args;
+		var cluster = this.props.cluster;
+
+		if(page === "spot check") {
+			return null;
+		}
+
+		// Get info from the inverted index
+		var detector = data.corpusData.detectors[args.detector].name;
+		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+		var info = data.studentIndex.queryDetectors(cluster.members, assignment);
+
+		// Remove the current detector
+		var pos = info.indexOf(detector);
+		if(pos >= 0) {
+			info.splice(pos, 1);
+		}
+
+		// Render
+		if(info.length === 0) {
+			return null;
+		}
+
+		return (
+			<div className="indexInfo">
+				{
+					"Member(s) of this cluster have been found to be cheating by detector" + (info.length > 1 ? "s: " : ": ") + info.join(", ") + "."
+				}
+			</div>
+		);
+	},
 	render: function() {
 		var cluster = this.props.cluster;
 
@@ -655,11 +690,14 @@ var Ratings = React.createClass({
 			falsePosClass += " selected";
 		}
 
+		var indexInfo = this.getIndexInfo();
+
 		return (
 			<div className="ratings section">
 				<h5>Evaluation:</h5>
 				<button className={cheatingClass} onClick={this.setCheating}>Cheating</button>
 				<button className={falsePosClass} onClick={this.setFalsePos}>False Pos</button>
+				{ indexInfo }
 			</div>
 		);
 	}

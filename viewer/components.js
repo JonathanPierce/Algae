@@ -611,6 +611,7 @@ var ClusterPicker = React.createClass({
 		var clusters = this.props.clusters;
 		var cluster = this.props.cluster;
 		var args = data.state.args;
+		var clusterIndex = data.state.args.cluster;
 
 		if (clusters.length === 0) {
 			return React.createElement(
@@ -641,12 +642,12 @@ var ClusterPicker = React.createClass({
 				null,
 				React.createElement(
 					"button",
-					{ onClick: this.prev },
+					{ onClick: this.prev, disabled: clusterIndex === 0 },
 					"Prev"
 				),
 				React.createElement(
 					"button",
-					{ onClick: this.next },
+					{ onClick: this.next, disabled: clusterIndex === clusters.length - 1 },
 					"Next"
 				)
 			),
@@ -785,6 +786,38 @@ var Ratings = React.createClass({
 			ViewState.setCluster(this.props.clusterKey, index, 2);
 		}
 	},
+	getIndexInfo: function getIndexInfo() {
+		var data = this.props.data;
+		var page = data.state.page;
+		var args = data.state.args;
+		var cluster = this.props.cluster;
+
+		if (page === "spot check") {
+			return null;
+		}
+
+		// Get info from the inverted index
+		var detector = data.corpusData.detectors[args.detector].name;
+		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+		var info = data.studentIndex.queryDetectors(cluster.members, assignment);
+
+		// Remove the current detector
+		var pos = info.indexOf(detector);
+		if (pos >= 0) {
+			info.splice(pos, 1);
+		}
+
+		// Render
+		if (info.length === 0) {
+			return null;
+		}
+
+		return React.createElement(
+			"div",
+			{ className: "indexInfo" },
+			"Member(s) of this cluster have been found to be cheating by detector" + (info.length > 1 ? "s: " : ": ") + info.join(", ") + "."
+		);
+	},
 	render: function render() {
 		var cluster = this.props.cluster;
 
@@ -800,6 +833,8 @@ var Ratings = React.createClass({
 		if (cluster.evaluation === 2) {
 			falsePosClass += " selected";
 		}
+
+		var indexInfo = this.getIndexInfo();
 
 		return React.createElement(
 			"div",
@@ -818,7 +853,8 @@ var Ratings = React.createClass({
 				"button",
 				{ className: falsePosClass, onClick: this.setFalsePos },
 				"False Pos"
-			)
+			),
+			indexInfo
 		);
 	}
 });

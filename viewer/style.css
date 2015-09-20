@@ -180,3 +180,8 @@ html, body {
 .exportSave button {
 	width: 100%;
 }
+
+.indexInfo {
+	margin-top: 12px;
+	font-size: 8pt;
+}
