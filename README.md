@@ -8,6 +8,7 @@ A platform for running code plagiarism (cheating) detection software on large da
 2. Set up a corpus. See the section below.
 3. Make sure that clang and libclang are installed (along with python binding) (sudo apt-get install clang libclang-dev && sudo pip install clang). Many built-in processors require this.
 4. Set up your detectors and configuration file.
+5. View your results in the results viewer.
 
 Then, run algae as follows from your algae folder:
 
@@ -66,7 +67,7 @@ The corpus is the set of students/assignment you want to run cheating detection 
 				- Processor results go here.
 		- postprocessed
 			- [assignment 1 id]
-				- Postprocessor results go here.	
+				- Postprocessor results go here.
 	- students.txt (a list of student ids, one per line)
 	- semesters.csv
 		- Optional, but potentially useful.
@@ -100,7 +101,7 @@ The configuration file (config.json) is the main driver of algae. It should be f
 				- For each (object):
 					- name (string): Same as above.
 					- args (object - optional): Same as above.
-					
+
 See the config.json provided for an example.
 
 ## Progress File
@@ -114,6 +115,15 @@ A preprocessor/processor/postprocessor is a python program containing a function
 - students - an array of all student ids
 - assignments - the array of assignment that this processor should check
 - args - args to the preprocessor/processor/postprocessor (passed in from config)
-- helpers - a set of handy helper functions over the corpus (see implimention in helpers/corpus.py)
+- helpers - a set of handy helper functions over the corpus (see implementation in helpers/corpus.py)
 
 Processors should return True on success and False on failure.
+
+## Viewing Results
+Algae has a built-in results viewer. Simply run the following command from within your Algae folder:
+
+```
+python results.py
+```
+
+Note that you will need node installed for this to work.

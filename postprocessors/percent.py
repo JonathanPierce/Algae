@@ -38,7 +38,9 @@ def createClusters(data, filename, assignName, allowPartners, helpers):
 	return clusters
 
 def sortFun(a, b):
-	return int(a.score - b.score)
+	if a.score < b.score:
+		return -1
+	return 1
 
 # runs an entry in parellel
 def runEntry(filename, students, helpers, assignment, args, allowPartners):
@@ -73,6 +75,7 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 			if top:
 				takeNum = int(takeNum * -1)
 				results = data[takeNum:]
+				results = results[::-1] # conveniently reverse
 			else:
 				results = data[:int(takeNum)]
 

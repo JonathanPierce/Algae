@@ -5,7 +5,7 @@ def weightFun(key, students):
 
 def genKeys(text):
 	results = []
-	tokenLen = 8
+	tokenLen = 12
 
 	for i in range(0, len(text) - tokenLen):
 		results.append(text[i:(i + tokenLen)])

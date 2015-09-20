@@ -870,6 +870,10 @@ var ExportSave = React.createClass({
 	},
 	reimport: function reimport() {
 		ViewState.unsetSpotData();
+
+		var args = this.props.data.state.args;
+		args.cluster = 0;
+		ViewState.setState("spot check", args);
 	},
 	save: function save() {
 		$.get("/save", function () {});

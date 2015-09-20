@@ -26,7 +26,7 @@ def getDeviation(data, mean, key):
 		count = count + 1.0
 
 	normalized = totalDiff / count
-	
+
 	return math.sqrt(normalized)
 
 # gets the z-score of a data point
@@ -91,12 +91,19 @@ def runAssignment(students, assign, args, helpers):
 					clusters.append(cluster)
 
 	# save the clusters
+	def sortFun(a, b):
+		if a.score < b.score:
+			return 1
+		return -1
+
+	clusters.sort(sortFun)
+
 	results = []
 	for cluster in clusters:
 		results.append(cluster.toJSON())
 	json = io.getJSONString(results, True)
 	helpers.writeToPostprocessed(json, assign.name, "obfuscation_results.json")
- 
+
 	# all done
 	helpers.printf("Finished '{}'!\n".format(assign.name))
 
@@ -113,6 +120,6 @@ def run(students, assignments, args, helpers):
 	# wait for all to finish
 	for t in threads:
 		t.join()
-		
+
 	# all done!
 	return True

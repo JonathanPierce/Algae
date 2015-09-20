@@ -1,5 +1,11 @@
 import helpers.common as common
 from multiprocessing import Process
+import math
+
+class IndexStudent():
+	def __init__(self, student):
+		self.student = student
+		self.count = 1
 
 class IndexEntry():
 	def __init__(self):
@@ -7,8 +13,22 @@ class IndexEntry():
 		self.students = []
 
 	def add(self, student):
-		if student not in self.students:
-			self.students.append(student)
+		entry = self.contains(student)
+
+		if entry != None:
+			# increase the count by 1
+			entry.count += 1
+		else:
+			# create an add a new entry
+			entry = IndexStudent(student)
+			self.students.append(entry)
+
+	def contains(self, student):
+		for elem in self.students:
+			if elem.student == student:
+				return elem
+
+		return None
 
 class InvertedIndex():
 	def __init__(self):
@@ -45,12 +65,16 @@ class InvertedIndex():
 			if self.index.has_key(key):
 				entry = self.index[key]
 
+				# find the count for us
+				studentCount = 0.0
 				for current in entry.students:
-					if current != student and current != partner:
-						if results.has_key(current):
-							results[current] += entry.weight
-						else:
-							results[current] = entry.weight
+					if current.student == student:
+						studentCount = float(current.count)
+
+				# add the proper score for this key for each match
+				for current in entry.students:
+					if current.student != student:
+						results[current.student] = entry.weight * math.log(1.0 + min(studentCount, float(current.count)))
 
 		return results
 
