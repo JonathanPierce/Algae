@@ -48,7 +48,7 @@ class InvertedIndex():
 		for key in self.index:
 			entry = self.index[key]
 
-			if len(entry.students) < threshold:
+			if float(len(entry.students)) < threshold:
 				results[key] = entry
 
 		self.index = results
@@ -74,7 +74,10 @@ class InvertedIndex():
 				# add the proper score for this key for each match
 				for current in entry.students:
 					if current.student != student:
-						results[current.student] = entry.weight * math.log(1.0 + min(studentCount, float(current.count)))
+						if results.has_key(current.student):
+							results[current.student] += entry.weight * math.log(1.0 + min(studentCount, float(current.count)))
+						else:
+							results[current.student] = entry.weight * math.log(1.0 + min(studentCount, float(current.count)))
 
 		return results
 

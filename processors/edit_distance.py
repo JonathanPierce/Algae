@@ -59,7 +59,7 @@ def runEntry(entry, students, helpers, assignName, sourceSuffix, resultsSuffix, 
 		# flush results to disk
 		resultFilename = common.makeFilenameSafe(entry["sources"][0]) + resultsSuffix
 		common.pairResultsToProcessedJSON(results, assignName, resultFilename, helpers)
-		helpers.printf("Finished '{}'!\n".format(assignName))
+		helpers.printf("Finished '{}/{}'!\n".format(assignName, entry["sources"][0]))
 
 def run(students, assignments, args, helpers):
 	sourceSuffix = args["sourceSuffix"]
