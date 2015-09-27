@@ -20,7 +20,7 @@ If you see errors regarding libclang, head over to preprocessors/tokenizer/token
 
 ### Mode
 - “all” - default if none specified - Runs the preprocessors, processor, and postprocessors in order.
-- “preprocess|process|postprocess” - Runs only the specified lifecycle event. Using these automatically applies the ‘-force’ option.
+- “preprocess|process|process+post|postprocess” - Runs only the specified lifecycle event. Using these automatically applies the ‘-force’ option.
 
 ### Jobs
 - none specified - Runs all jobs from configuration
