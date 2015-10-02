@@ -7,6 +7,7 @@
 # - resultsSuffix (string) - Suffix used by the postprocessor.
 # - percent (number [0-100]) - Percentage of data to keep
 # - top (bool): Take the top or bottom percent.
+# - groupPairs (bool) - Cluster together connected components of pairs
 
 import helpers.common as common
 import helpers.io as io
@@ -81,6 +82,10 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 
 			# create the clusters
 			clusters = createClusters(results, filename, assignName, allowPartners, helpers)
+
+			# group pairs if necessary
+			if args.has_key("groupPairs") and args["groupPairs"] == True:
+				clusters = common.groupPairClusters(clusters, top)
 
 			# flush to disk
 			common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(filename) + resultsSuffix, helpers)

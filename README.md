@@ -127,3 +127,12 @@ python results.py
 ```
 
 Note that you will need node installed for this to work.
+
+## FERPA and Warnings
+
+Do not run the results viewer on a computer than can be remotely accessed over HTTP by the general public:
+
+- Student data (in the United States) is protected by a law called FERPA, and making this data publicly available (on purpose or not) constitutes a violation of this law.
+- While the results viewer is running, an attacker can remotely access ANY file on your computer.
+
+The more you know *tink*.

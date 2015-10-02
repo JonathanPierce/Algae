@@ -119,3 +119,45 @@ class Cluster:
 		for member in self.members:
 			result["members"].append(member.toJSON())
 		return result
+
+# Groups pair clusters into larger connected components
+def groupPairClusters(clusters, top):
+	groups = []
+
+	for cluster in clusters:
+		studentList = [cluster.members[0].student, cluster.members[1].student]
+		if cluster.members[0].partner != None:
+			studentList.append(cluster.members[0].partner)
+		if cluster.members[1].partner != None:
+			studentList.append(cluster.members[1].partner)
+
+		# collect the groups
+		foundMatch = False
+		for group in groups:
+			for member in group.members:
+				# look for a matching member
+				if member.student in studentList or member.partner in studentList:
+					# some shared member, group together
+					group.add(cluster.members[0])
+					group.add(cluster.members[1])
+
+					# Adjust the score appropriately
+					if top == True:
+						group.score = max(group.score, cluster.score)
+					else:
+						group.score = min(group.score, cluster.score)
+
+					# all done here
+					foundMatch = True
+					break
+
+			# stop looking for groups if we found one
+			if foundMatch == True:
+				break
+
+		# add the cluster as its own group if need be
+		if foundMatch == False:
+			groups.append(cluster)
+
+	# all done
+	return groups

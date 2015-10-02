@@ -29,7 +29,7 @@ def filterData(filename, assignment, args, helpers):
 
 			# write back to disk
 			resultJSON = io.getJSONString(results, True)
-			helpers.writeToPostprocessed(resultJSON, assignment.name, semester + "_" + filename)	
+			helpers.writeToPostprocessed(resultJSON, assignment.name, semester + "_" + filename)
 
 def run(students, assignments, args, helpers):
 	singleFile = False
@@ -45,6 +45,6 @@ def run(students, assignments, args, helpers):
 				filterData(filename, assignment, args, helpers)
 		else:
 			filterData(args['inputFile'], assignment, args, helpers)
-			
+
 	# all done
 	return True
