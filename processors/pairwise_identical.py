@@ -22,35 +22,36 @@ def runAssignment(assignment, students, args, helpers):
 	for filename in files:
 		# for each pair of students
 		for i in range(len(students)):
-			for j in range(i):
-				student1 = students[i]
-				student2 = students[j]
-				hashFilename = common.makeFilenameSafe(filename) + args["sourceSuffix"]
+			for j in range(i + 1):
+				if i != j:
+					student1 = students[i]
+					student2 = students[j]
+					hashFilename = common.makeFilenameSafe(filename) + args["sourceSuffix"]
 
-				student1Hash = helpers.readFromPreprocessed(student1, assignment.name, hashFilename)
-				student2Hash = helpers.readFromPreprocessed(student2, assignment.name, hashFilename)
+					student1Hash = helpers.readFromPreprocessed(student1, assignment.name, hashFilename)
+					student2Hash = helpers.readFromPreprocessed(student2, assignment.name, hashFilename)
 
-				if student1Hash != None and student2Hash != None:
-					# see if the hashes match
-					student1Hash = hashText(student1Hash)
-					student2Hash = hashText(student2Hash)
+					if student1Hash != None and student2Hash != None:
+						# see if the hashes match
+						student1Hash = hashText(student1Hash)
+						student2Hash = hashText(student2Hash)
 
-					if student1Hash == student2Hash:
-						# if they do, add to the cluster
-						member1 = common.Member(student1, assignment.name, helpers)
-						member2 = common.Member(student2, assignment.name, helpers)
+						if student1Hash == student2Hash:
+							# if they do, add to the cluster
+							member1 = common.Member(student1, assignment.name, helpers)
+							member2 = common.Member(student2, assignment.name, helpers)
 
-						# find an existing cluster or create a new one
-						cluster = None
-						if clusters.has_key(student1Hash):
-							cluster = clusters[student1Hash]
-						else:
-							cluster = common.Cluster(allowPartners, filename, 100)
-							clusters[student1Hash] = cluster
+							# find an existing cluster or create a new one
+							cluster = None
+							if clusters.has_key(student1Hash):
+								cluster = clusters[student1Hash]
+							else:
+								cluster = common.Cluster(allowPartners, filename, 100)
+								clusters[student1Hash] = cluster
 
-						# add these students
-						cluster.add(member1)
-						cluster.add(member2)
+							# add these students
+							cluster.add(member1)
+							cluster.add(member2)
 
 	# postprocess the clusters
 	clusterArray = []
