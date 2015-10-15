@@ -61,7 +61,7 @@ def doAssignment(students, assign, helpers):
 
 			if text != None:
 				# tokenize the file
-				result = tokenize(text) #TODO
+				result = tokenize(text)
 
 				# write the result
 				safeFilename = common.makeFilenameSafe(sources[0]) + "vted.txt"
