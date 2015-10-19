@@ -45,7 +45,7 @@ class Args:
 						found = True
 						break
 
-				if found == False and arg.lower() in ["--force", "--clean"]:
+				if found == False and arg.lower() in ["--force", "--clean", "--cleanpre"]:
 					self.options.append(arg[2:].lower())
 					found = True
 
@@ -63,5 +63,5 @@ class Args:
 			self.options.append('force')
 
 		# Have "clean"? Add force.
-		if "clean" in self.options:
+		if "clean" in self.options or "cleanpre" in self.options:
 			self.options.append('force')

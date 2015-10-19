@@ -15,11 +15,11 @@ def processToken(token):
     if token in instructions:
         if token in ["andi", "divu", "multu", "ori", "subu", "addu", "addi", "xori"]:
             token = token[:-1]
-        
+
         return chr(ord("(") + instructions.index(token))
 
     # are we a register
-    isNumRegister = re.match("^\$[0-3][0-9]?$", token) != None
+    isNumRegister = re.match("^\$[0-3]?[0-9]$", token) != None
     isNamedRegister = re.match("^\$[vatsk][0-9]$", token) != None
     isSpecialRegister = token in ["$zero", "$lo", "$hi", "$at", "$gp", "$sp", "$fp", "$ra"]
     if isNumRegister or isNamedRegister or isSpecialRegister:
@@ -28,7 +28,7 @@ def processToken(token):
     # are we a number/hex/char/string/literal
     isNumber = re.match("^(-?)[0-9]+(\.[0-9]*)?$", token) != None
     isHex = re.match("^0x[0-9a-f]+$", token) != None
-    isChar = re.match("^'.'$", token) != None
+    isChar = re.match("^'\\\?.'$", token) != None
     isString = re.match("^\".*\"$", token) != None
     if isNumber or isChar or isString or isHex:
         return "#"
