@@ -2,7 +2,7 @@ from index import run as runIndex
 import math
 
 def weightFun(key, students):
-	return (1.0 / math.log(1.0 + float(len(students)))) * math.log(float(len(key)) + 1.0, 5)
+	return (1.0 / float(len(students))) * math.log(float(len(key)) + 1.0, 5)
 
 def genKeys(text):
 	return text.split("\n")
