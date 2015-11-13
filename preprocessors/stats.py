@@ -31,7 +31,7 @@ def genStats(path, helpers):
 			numComments += 1
 
 		# look for math ops
-		if token.spelling in ["+", "-", "*", "/", "|", "&", "+=", "-=", "*=", "/=", ">>=", "<<=", "++", "--", "~", ">>"]:
+		if token.spelling in ["+", "-", "*", "/", "|", "&", "+=", "-=", "*=", "/=", ">>=", "<<=", "++", "--", "~", ">>", "!"]:
 			numMathOps += 1
 
 		# look for function decs/calls
@@ -56,7 +56,7 @@ def genStats(path, helpers):
 	avgIdentLength = total / float(len(idents))
 
 	# find the number of defines
-	defines = re.findall("#define ", text.lower())
+	defines = re.findall("#\s*define ", text.lower())
 	numDefines = len(defines)
 
 	# find the number of lines
@@ -122,7 +122,6 @@ def run(students, assignments, args, helpers):
 	# wait for all to finish
 	for t in threads:
 		t.join()
-		
+
 	# all done!
 	return True
-	
