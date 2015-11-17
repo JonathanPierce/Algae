@@ -12,8 +12,7 @@ def tokenize(path):
 		if token.kind.name == "IDENTIFIER":
 			name = token.spelling.lower()
 			name = re.sub("_", "", name)
-			if name not in idents:
-				idents.append(name)
+			idents.append(name)
 
 	return "\n".join(idents)
 
@@ -52,7 +51,6 @@ def run(students, assignments, args, helpers):
 	# wait for all to finish
 	for t in threads:
 		t.join()
-		
+
 	# all done!
 	return True
-	

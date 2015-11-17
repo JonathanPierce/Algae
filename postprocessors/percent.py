@@ -12,6 +12,7 @@
 import helpers.common as common
 import helpers.io as io
 from multiprocessing import Process
+from guassian import getMean, getDeviation
 import math
 
 # converts a JSON pair result into a Python object
@@ -66,6 +67,11 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 
 			# sort them
 			data.sort(sortFun)
+
+			# calculate and print stats
+			mean = getMean(data)
+			dev = getDeviation(data, mean)
+			helpers.printf("{}/{} mean: {}, std. devation: {}\n".format(assignName, filename, mean, dev))
 
 			# take to the top bottom percent
 			takeNum = math.floor(float(len(data)) * percent)
