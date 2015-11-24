@@ -1,7 +1,8 @@
 from index import run as runIndex
+from math import log
 
-def weightFun(key, students):
-	return 1.0 / float(len(students))
+def weightFun(key, students, total):
+	return 1.0 + (1.0 - float(len(students))/total)
 
 def genKeys(text):
 	results = []

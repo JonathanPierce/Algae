@@ -35,7 +35,7 @@ class InvertedIndex():
 		self.index = {}
 
 	def add(self, key, student):
-		if self.index.has_key(key):
+		if key in self.index:
 			self.index[key].add(student)
 		else:
 			entry = IndexEntry()
@@ -53,16 +53,17 @@ class InvertedIndex():
 
 		self.index = results
 
-	def weight(self, weightFun):
+	def weight(self, weightFun, total):
 		for key in self.index:
 			entry = self.index[key]
-			entry.weight = weightFun(key, entry.students)
+			entry.weight = weightFun(key, entry.students, float(total))
 
 	def scoreStudent(self, student, partner, keys):
 		results = {}
 
+		# for every unique key
 		for key in set(keys):
-			if self.index.has_key(key):
+			if key in self.index:
 				entry = self.index[key]
 
 				# find the count for us
@@ -74,7 +75,7 @@ class InvertedIndex():
 				# add the proper score for this key for each match
 				for current in entry.students:
 					if current.student != student:
-						if results.has_key(current.student):
+						if current.student in results:
 							results[current.student] += entry.weight * math.log(1.0 + min(studentCount, float(current.count)))
 						else:
 							results[current.student] = entry.weight * math.log(1.0 + min(studentCount, float(current.count)))
@@ -94,7 +95,6 @@ def runAssignment(students, assignment, args, helpers, weightFun, genKeys):
 	for filename in files:
 		# build the index
 		index = InvertedIndex()
-		keysPerStudent = {}
 
 		for student in students:
 			# try to read the file
@@ -103,7 +103,6 @@ def runAssignment(students, assignment, args, helpers, weightFun, genKeys):
 			if text != None:
 				# generate the keys
 				keys = genKeys(text)
-				keysPerStudent[student] = keys
 
 				# add to the index
 				for key in keys:
@@ -111,7 +110,7 @@ def runAssignment(students, assignment, args, helpers, weightFun, genKeys):
 
 		# prune and weight
 		index.prune(threshold)
-		index.weight(weightFun)
+		index.weight(weightFun, len(students))
 
 		# build the pair results
 		results = common.PairResults()
@@ -119,8 +118,11 @@ def runAssignment(students, assignment, args, helpers, weightFun, genKeys):
 		seen = []
 		for student in students:
 			# retreive the keys
-			if student in keysPerStudent:
-				keys = keysPerStudent[student]
+			safeFilename = common.makeFilenameSafe(filename) + sourceSuffix
+			text = helpers.readFromPreprocessed(student, assignName, safeFilename)
+			if text != None:
+				# generate the keys
+				keys = genKeys(text)
 
 				# get the member (for the partner)
 				member = common.Member(student, assignName, helpers)
@@ -141,6 +143,15 @@ def runAssignment(students, assignment, args, helpers, weightFun, genKeys):
 
 			# prevent duplicates
 			seen.append(student)
+
+		# normalize the scores to range 0-100
+		biggest = 0.0
+		for pair in results.pairs:
+			if pair.score > biggest:
+				biggest = float(pair.score)
+
+		for pair in results.pairs:
+			pair.score = (float(pair.score) / biggest) * 100.0
 
 		# flush to disk
 		resultFilename = common.makeFilenameSafe(filename) + resultsSuffix
