@@ -53,7 +53,9 @@ def genStats(path, helpers):
 	total = 0.0
 	for ident in idents:
 		total += float(len(ident))
-	avgIdentLength = total / float(len(idents))
+	avgIdentLength = 0.0
+	if len(idents) > 0:
+		avgIdentLenth = total / float(len(idents))
 
 	# find the number of defines
 	defines = re.findall("#\s*define ", text.lower())
