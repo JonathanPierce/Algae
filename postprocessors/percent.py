@@ -60,7 +60,7 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 			data.append(pair)
 
 			i += 1
-			if i % 1000 == 0:
+			if i % 100000 == 0:
 				gc.collect()
 
 		# sort them
@@ -99,7 +99,7 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 			index += 1
 			results.append(current)
 
-			if index % 1000 == 0:
+			if index % 50000 == 0:
 				gc.collect()
 
 		# create the clusters
@@ -131,7 +131,7 @@ def run(students, assignments, args, helpers):
 		allowPartners = assignment.args["allowPartners"]
 
 		# print progress
-		helpers.printf("postprocessing '{}' in parellel...\n".format(assignName))
+		helpers.printf("postprocessing '{}' in serial...\n".format(assignName))
 
 		# allow entry lists and file lists
 		entries = []
@@ -147,14 +147,8 @@ def run(students, assignments, args, helpers):
 			if assignment.args.has_key("entries"):
 				filename = entry["sources"][0]
 
-			# create the thread
-			t = Process(target=runEntry, args=(filename, students, helpers, assignment, args, allowPartners))
-			threads.append(t)
-			t.start()
-
-	# join all of the threads
-	for t in threads:
-		t.join()
+			# run the entry
+			runEntry(filename, students, helpers, assignment, args, allowPartners)
 
 	# all done
 	return True
