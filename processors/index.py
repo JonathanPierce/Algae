@@ -112,8 +112,9 @@ def runAssignment(students, assignment, args, helpers, weightFun, genKeys):
 		index.prune(threshold)
 		index.weight(weightFun, len(students))
 
-		# build the pair results
-		results = common.PairResults()
+		# build the denormalized pair results
+		resultFilename = common.makeFilenameSafe(filename) + "raw_" + resultsSuffix
+		results = common.PairResults(assignName, resultFilename, helpers)
 
 		seen = []
 		for student in students:
@@ -145,17 +146,22 @@ def runAssignment(students, assignment, args, helpers, weightFun, genKeys):
 			seen.append(student)
 
 		# normalize the scores to range 0-100
+		results.finish()
+
 		biggest = 0.0
-		for pair in results.pairs:
+		for pair in results.iterate():
 			if pair.score > biggest:
 				biggest = float(pair.score)
 
-		for pair in results.pairs:
-			pair.score = (float(pair.score) / biggest) * 100.0
-
 		# flush to disk
-		resultFilename = common.makeFilenameSafe(filename) + resultsSuffix
-		common.pairResultsToProcessedJSON(results, assignName, resultFilename, helpers)
+		finalResultFilename = common.makeFilenameSafe(filename) + resultsSuffix
+		finalResults = common.PairResults(assignName, finalResultFilename, helpers)
+
+		for pair in results.iterate():
+			pair.score = (float(pair.score) / biggest) * 100.0
+			finalResults.add(pair)
+
+		finalResults.finish()
 
 	# all done
 	helpers.printf("Finished '{}'!\n".format(assignName))

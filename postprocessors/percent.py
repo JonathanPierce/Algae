@@ -15,13 +15,6 @@ from multiprocessing import Process
 from guassian import getMean, getDeviation
 import math
 
-# converts a JSON pair result into a Python object
-def pairJSONToObject(json):
-	student1 = json["pair"][0]
-	student2 = json["pair"][1]
-	score = float(json["score"])
-	return common.PairResult(student1, student2, score)
-
 # creates clusters from the filtered data
 def createClusters(data, filename, assignName, allowPartners, helpers):
 	clusters = []
@@ -57,47 +50,61 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 	filepath = helpers.getProcessedPath(assignName, safeFilename)
 
 	if filepath != None:
-		rawJSON = io.readJSON(filepath)
-		if rawJSON != None:
-			data = []
+		rawData = common.PairResults(assignName, safeFilename, helpers)
+		data = []
 
-			# convert into python objects
-			for element in rawJSON:
-				data.append(pairJSONToObject(element))
+		# convert into python objects
+		for pair in rawData.iterate():
+			data.append(pair)
 
-			# sort them
-			data.sort(sortFun)
+		# sort them
+		data.sort(sortFun)
 
-			# calculate and print stats
-			mean = getMean(data)
-			dev = getDeviation(data, mean)
-			helpers.printf("{}/{} mean: {}, std. devation: {}\n".format(assignName, filename, mean, dev))
+		# calculate and print stats
+		mean = getMean(data)
+		dev = getDeviation(data, mean)
+		helpers.printf("{}/{} mean: {}, std. devation: {}\n".format(assignName, filename, mean, dev))
 
-			# take to the top bottom percent
-			takeNum = math.floor(float(len(data)) * percent)
-			if "maxResults" in args:
-				takeNum = min(args["maxResults"], takeNum)
+		# take to the top bottom percent
+		takeNum = math.floor(float(len(data)) * percent)
+		if "maxResults" in args:
+			takeNum = min(args["maxResults"], takeNum)
 
-			results = None
-			if top:
-				takeNum = int(takeNum * -1)
-				results = data[takeNum:]
-				results = results[::-1] # conveniently reverse
-			else:
-				results = data[:int(takeNum)]
+		if top:
+			data = data[::-1] # conveniently reverse
 
-			# create the clusters
-			clusters = createClusters(results, filename, assignName, allowPartners, helpers)
+		results = []
+		taken = 0
+		index = 0
+		while taken < takeNum:
+			current = data[index]
 
-			# group pairs if necessary
-			if args.has_key("groupPairs") and args["groupPairs"] == True:
-				clusters = common.groupPairClusters(clusters, top)
+			member1 = common.Member(current.pair[0], assignName, helpers)
+			member2 = common.Member(current.pair[1], assignName, helpers)
 
-			# flush to disk
-			common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(filename) + resultsSuffix, helpers)
+			if allowPartners and member1.partner != None and member2.partner != None:
+				if member1.student == member2.partner and member2.student == member1.partner:
+					# student are partners, ignore
+					index += 1
+					continue
 
-			# all done!
-			helpers.printf("Finished '{}/{}', with {} results!\n".format(assignName, filename, len(clusters)))
+			# take this entry
+			taken += 1
+			index += 1
+			results.append(pair)
+
+		# create the clusters
+		clusters = createClusters(results, filename, assignName, allowPartners, helpers)
+
+		# group pairs if necessary
+		if args.has_key("groupPairs") and args["groupPairs"] == True:
+			clusters = common.groupPairClusters(clusters, top)
+
+		# flush to disk
+		common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(filename) + resultsSuffix, helpers)
+
+		# all done!
+		helpers.printf("Finished '{}/{}', with {} results!\n".format(assignName, filename, len(clusters)))
 
 
 # the main function

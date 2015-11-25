@@ -42,7 +42,7 @@ def getDeviation(data, mean):
 		count = count + 1.0
 
 	normalized = totalDiff / count
-	
+
 	return math.sqrt(normalized)
 
 # gets the z-score of a data point
@@ -107,32 +107,31 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 	filepath = helpers.getProcessedPath(assignName, safeFilename)
 
 	if filepath != None:
-		rawJSON = io.readJSON(filepath)
-		if rawJSON != None:
-			data = []
+		rawData = common.PairResults(assignName, safeFilename, helpers)
+		data = []
 
-			# convert into python objects
-			for element in rawJSON:
-				data.append(pairJSONToObject(element))
+		# convert into python objects
+		for pair in rawData.iterate():
+			data.append(pair)
 
-			# get the mean
-			mean = getMean(data)
+		# get the mean
+		mean = getMean(data)
 
-			# get the deviation
-			deviation = getDeviation(data, mean)
-			helpers.printf("{}/{}: mean {}, deviation {}\n".format(assignName, filename, mean, deviation))
+		# get the deviation
+		deviation = getDeviation(data, mean)
+		helpers.printf("{}/{}: mean {}, deviation {}\n".format(assignName, filename, mean, deviation))
 
-			# filter out data
-			filtered = filterData(data, mean, deviation, threshold, above, minThreshold)
+		# filter out data
+		filtered = filterData(data, mean, deviation, threshold, above, minThreshold)
 
-			# create the clusters
-			clusters = createClusters(filtered, filename, assignName, allowPartners, helpers)
+		# create the clusters
+		clusters = createClusters(filtered, filename, assignName, allowPartners, helpers)
 
-			# flush to disk
-			common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(filename) + resultsSuffix, helpers)
+		# flush to disk
+		common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(filename) + resultsSuffix, helpers)
 
-			# all done!
-			helpers.printf("Finished '{}', with {} results!\n".format(assignName, len(clusters)))
+		# all done!
+		helpers.printf("Finished '{}', with {} results!\n".format(assignName, len(clusters)))
 
 
 # the main function

@@ -16,10 +16,6 @@ def clustersToStandardJSON(clusters, assignment, filename, helpers):
 	json = io.getJSONString(results, True)
 	helpers.writeToPostprocessed(json, assignment, filename)
 
-def pairResultsToProcessedJSON(results, assignment, filename, helpers):
-	json = io.getJSONString(results.toJSON(), False)
-	helpers.writeToProcessed(json, assignment, filename)
-
 # only use with a preprocessor or processor
 def getPartner(student, assignment, semester, helpers):
 	if student != None:
@@ -51,16 +47,47 @@ class PairResult:
 		return result
 
 class PairResults:
-	def __init__(self):
-		self.pairs = []
+	def __init__(self, assignment, filename, helpers):
+		self.filename = helpers.config.corpusPath + '__algae__/processed/' + assignment + '/' + filename
+		self.handle = None
 
+	# write a line to disk
 	def add(self, pair):
-		self.pairs.append(pair)
+		if self.handle == None:
+			self.handle = open(self.filename, "w+")
 
+		string = "{},{},{}\n".format(pair.pair[0], pair.pair[1], pair.score)
+		self.handle.write(string)
+
+	# closes the handle
+	# IF WE'VE CALLED ADD(), CALL THIS BEFORE ITERATE()
+	def finish(self):
+		if self.handle != None:
+			self.handle.close()
+			self.handle = None
+
+	# Generator that allows iteration through all results
+	def iterate(self):
+		handle = open(self.filename, "r")
+		line = handle.readline()
+		while line != "":
+			parts = line.strip().split(",")
+
+			# create the pair result
+			pair = PairResult(parts[0], parts[1], float(parts[2]))
+			yield pair
+
+			# get the next line
+			line = handle.readline()
+
+		# all done
+		handle.close()
+
+	# Sends data to JSON. Can use lots of RAM.
 	def toJSON(self):
 		# return JSON serialiazble form
 		results = []
-		for pair in self.pairs:
+		for pair in self.iterate():
 			results.append(pair.toJSON())
 		return results
 

@@ -21,46 +21,33 @@ def runEditDistance(path1, path2):
 # THREAD CONTENT
 def runEntry(entry, students, helpers, assignName, sourceSuffix, resultsSuffix, allowPartners):
 	# create an empty PairResults object
-		results = common.PairResults()
+	resultFilename = common.makeFilenameSafe(entry["sources"][0]) + resultsSuffix
+	results = common.PairResults(assignName, resultFilename, helpers)
 
-		# for each pair of students
-		# for each pair of students
-		for i in range(len(students)):
-			for j in range(i + 1):
-				if i != j:
-					# are these students partners?
-					student1 = students[i]
-					student2 = students[j]
+	# for each pair of students
+	for i in range(len(students)):
+		for j in range(i + 1):
+			if i != j:
+				# are these students partners?
+				student1 = students[i]
+				student2 = students[j]
 
-					# get both file paths
-					safeFilename = common.makeFilenameSafe(entry["sources"][0]) + sourceSuffix
-					path1 = helpers.getPreprocessedPath(student1, assignName, safeFilename)
-					path2 = helpers.getPreprocessedPath(student2, assignName, safeFilename)
+				# get both file paths
+				safeFilename = common.makeFilenameSafe(entry["sources"][0]) + sourceSuffix
+				path1 = helpers.getPreprocessedPath(student1, assignName, safeFilename)
+				path2 = helpers.getPreprocessedPath(student2, assignName, safeFilename)
 
-					# make sure both paths exist
-					if path1 != None and path2 != None:
-						member1 = common.Member(student1, assignName, helpers)
-						member2 = common.Member(student2, assignName, helpers)
+				# make sure both paths exist
+				if path1 != None and path2 != None:
+					editDistance = runEditDistance(path1, path2)
 
-						checkDistance = True
+					# save the pair result
+					result = common.PairResult(student1, student2, editDistance)
+					results.add(result)
 
-						if allowPartners and member1.partner != None and member2.partner != None:
-							if member1.student == member2.partner and member2.student == member1.partner:
-								# student are partners, ignore
-								checkDistance = False
-
-						# If not, calculate edit distance and save to corpus
-						if checkDistance:
-							editDistance = runEditDistance(path1, path2)
-
-							# save the pair result
-							result = common.PairResult(student1, student2, editDistance)
-							results.add(result)
-
-		# flush results to disk
-		resultFilename = common.makeFilenameSafe(entry["sources"][0]) + resultsSuffix
-		common.pairResultsToProcessedJSON(results, assignName, resultFilename, helpers)
-		helpers.printf("Finished '{}/{}'!\n".format(assignName, entry["sources"][0]))
+	# flush results to disk
+	results.finish()
+	helpers.printf("Finished '{}/{}'!\n".format(assignName, entry["sources"][0]))
 
 def run(students, assignments, args, helpers):
 	sourceSuffix = args["sourceSuffix"]
