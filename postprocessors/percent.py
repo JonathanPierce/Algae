@@ -14,6 +14,7 @@ import helpers.io as io
 from multiprocessing import Process
 from guassian import getMean, getDeviation
 import math
+import gc
 
 # creates clusters from the filtered data
 def createClusters(data, filename, assignName, allowPartners, helpers):
@@ -54,8 +55,13 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 		data = []
 
 		# convert into python objects
+		i = 0
 		for pair in rawData.iterate():
 			data.append(pair)
+
+			i += 1
+			if i % 1000 == 0:
+				gc.collect()
 
 		# sort them
 		data.sort(sortFun)
@@ -93,12 +99,18 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 			index += 1
 			results.append(current)
 
+			if index % 1000 == 0:
+				gc.collect()
+
 		# create the clusters
 		clusters = createClusters(results, filename, assignName, allowPartners, helpers)
 
 		# group pairs if necessary
 		if args.has_key("groupPairs") and args["groupPairs"] == True:
 			clusters = common.groupPairClusters(clusters, top)
+
+		# free up RAM
+		gc.collect()
 
 		# flush to disk
 		common.clustersToStandardJSON(clusters, assignName, common.makeFilenameSafe(filename) + resultsSuffix, helpers)
