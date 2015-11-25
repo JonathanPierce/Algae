@@ -91,7 +91,7 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 			# take this entry
 			taken += 1
 			index += 1
-			results.append(pair)
+			results.append(current)
 
 		# create the clusters
 		clusters = createClusters(results, filename, assignName, allowPartners, helpers)
