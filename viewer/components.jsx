@@ -364,6 +364,7 @@ var CodeText = React.createClass({
         text = text.replace(/</g, "&lt;");
         text = text.replace(/>/g, "&gt;")
         text = text.replace(/\n/g, "<br/>");
+	text = text.replace(/\r/g, "<br/>"); // Windows, why???
 
         return prettyPrintOne(text);
 	},

@@ -49,11 +49,16 @@ class PairResult:
 class PairResults:
 	def __init__(self, assignment, filename, helpers):
 		self.filename = helpers.config.corpusPath + '__algae__/processed/' + assignment + '/' + filename
+		self.assignment = assignment
+		self.end = filename
 		self.handle = None
 
 	# write a line to disk
 	def add(self, pair):
 		if self.handle == None:
+			# create a blank file
+			helpers.writeToProcessed("", self.assignment, self.end)			
+
 			self.handle = open(self.filename, "w+")
 
 		string = "{},{},{}\n".format(pair.pair[0], pair.pair[1], pair.score)
@@ -120,12 +125,23 @@ class Cluster:
 				return
 		self.members.append(newMember)
 
+	# Helper function for CS225 code. Ignore.
+	def mp7exception(self):
+		# if all members come from fa11 or sp12
+		# and the file is maze.cpp, then allow partners
+		allEarly = True
+		for member in self.members:
+			if member.semester not in ["fa11", "sp12"]:
+				allEarly = False
+
+		return allEarly and self.file == "maze.cpp"
+
 	def hasCheating(self):
 		if len(self.members) < 2:
 			# can't have cheating without at least two people
 			return False
 
-		if len(self.members) == 2 and self.allowPartners:
+		if len(self.members) == 2 and (self.allowPartners or self.mp7exception()):
 			member1 = self.members[0]
 			member2 = self.members[1]
 			if member1.partner == None or member2.partner == None:

@@ -266,7 +266,7 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have a selected detector and assignment?
-		if (page === "evaluate" && (typeof args.detector === 'undefined' || typeof args.assignment === 'undefined')) {
+		if (page === "evaluate" && (typeof args.detector === "undefined" || typeof args.assignment === "undefined")) {
 			// Select the first one
 			args.detector = 0;
 			args.assignment = 0;
@@ -301,7 +301,7 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have a selected cluster/students?
-		if (typeof args.cluster === 'undefined') {
+		if (typeof args.cluster === "undefined") {
 			// Select the first
 			args.cluster = 0;
 			args.students = [0, 1];
@@ -445,6 +445,7 @@ var CodeText = React.createClass({
 		text = text.replace(/</g, "&lt;");
 		text = text.replace(/>/g, "&gt;");
 		text = text.replace(/\n/g, "<br/>");
+		text = text.replace(/\r/g, "<br/>"); // Windows, why???
 
 		return prettyPrintOne(text);
 	},
@@ -595,7 +596,7 @@ var ClusterPicker = React.createClass({
 			"select",
 			{ onChange: this.handleSelectChange, value: current },
 			clusters.map(function (cluster, index) {
-				cluster.evaluation = cluster.evaluation || 0; // For spot check
+				cluster.evaluation = cluster.evaluation || 0;
 				var evalString = cluster.evaluation === 0 ? "?" : cluster.evaluation === 1 ? "+" : "-";
 				var clusterString = "(" + evalString + ") cluster " + (index + 1) + " | " + cluster.members[0].student;
 				return React.createElement(
@@ -992,4 +993,5 @@ var ExportPage = React.createClass({
 		);
 	}
 });
+// For spot check
 
