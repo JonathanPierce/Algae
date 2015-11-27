@@ -33,7 +33,7 @@ class Corpus:
 			handle = open(config.corpusPath + "semesters.csv", "r")
 			reader = csv.reader(handle)
 			for row in reader:
-				self.semesterMap[row[0]] = row[1]
+				self.semesterMap[row[0]] = row[1].strip()
 			self.hasSemesters = True
 
 	def getAssignmentPath(self, student, assignment, filename):

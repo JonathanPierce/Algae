@@ -87,12 +87,14 @@ def runEntry(filename, students, helpers, assignment, args, allowPartners):
 
 			member1 = common.Member(current.pair[0], assignName, helpers)
 			member2 = common.Member(current.pair[1], assignName, helpers)
+			cluster = common.Cluster(allowPartners, filename, current.score)
+			cluster.add(member1)
+			cluster.add(member2)
 
-			if allowPartners and member1.partner != None and member2.partner != None:
-				if member1.student == member2.partner and member2.student == member1.partner:
-					# student are partners, ignore
-					index += 1
-					continue
+			if cluster.hasCheating() == False:
+				# student are partners, ignore
+				index += 1
+				continue
 
 			# take this entry
 			taken += 1

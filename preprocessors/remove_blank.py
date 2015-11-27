@@ -20,10 +20,11 @@ def run(students, assignments, args, helpers):
 					# try to get from this student
 					source = mangle_text(source)
 					other = helpers.readFromAssignment(student, assignment.name, filename)
+
 					if other != None:
 						other = mangle_text(other)
 						# if they are the same, remove
-						if source == other:
+						if source == other or other == "":
 							path = helpers.getAssignmentPath(student, assignment.name, filename)
 							os.system("rm {}".format(path))
 

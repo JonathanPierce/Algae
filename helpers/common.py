@@ -111,6 +111,7 @@ class Cluster:
 		self.allowPartners = allowPartners
 		self.file = filename
 		self.score = score
+		self.allowMistakes = True # allows (a,b),(b,) situations when true
 
 	def add(self, newMember):
 		for member in self.members:
@@ -128,8 +129,14 @@ class Cluster:
 			member1 = self.members[0]
 			member2 = self.members[1]
 			if member1.partner == None or member2.partner == None:
-				# both must have a partner
+				# check for a mistake
+				if self.allowMistakes == True:
+					mistake = (member1.partner == None and member2.partner == member1.student) or (member2.partner == None and member1.partner == member2.student)
+					return not mistake
+					
+				# assume both must have a partner
 				return True
+
 			# both must list eachother as partners
 			return (member1.student == member2.partner and member2.student == member1.partner) == False
 
