@@ -63,6 +63,9 @@ def genStats(path, helpers):
 
 	# find the number of lines
 	lines = text.split("\n")
+	if len(lines) == 1:
+		# ugh, windows
+		lines = text.split("\r")
 	numLines = len(lines)
 
 	# get the length of the longest line
@@ -72,7 +75,7 @@ def genStats(path, helpers):
 
 	# find the total amount of whitespace
 	for char in text:
-		if char in [" ", "\n", "\t"]:
+		if char in [" ", "\n", "\t", "\r"]:
 			numWhitespace += 1
 
 	# create a dict of results and return

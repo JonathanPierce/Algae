@@ -52,12 +52,13 @@ class PairResults:
 		self.assignment = assignment
 		self.end = filename
 		self.handle = None
+		self.helpers = helpers
 
 	# write a line to disk
 	def add(self, pair):
 		if self.handle == None:
 			# create a blank file
-			helpers.writeToProcessed("", self.assignment, self.end)			
+			self.helpers.writeToProcessed("", self.assignment, self.end)			
 
 			self.handle = open(self.filename, "w+")
 
