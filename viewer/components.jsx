@@ -483,6 +483,27 @@ var ClusterPicker = React.createClass({
 		var nextIndex = Math.min(currentIndex + 1, this.props.clusters.length - 1);
 		this.changeCluster(nextIndex);
 	},
+	nextUnrated: function() {
+		var currentIndex = this.props.data.state.args.cluster;
+		var nextIndex = Math.min(currentIndex + 1, this.props.clusters.length - 1);
+
+		var data = this.props.data;
+		var args = data.state.args;
+		var studentIndex = data.studentIndex;
+		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+
+		nextIndex = -1;
+		for(var i = currentIndex + 1; i < this.props.clusters.length; i++) {
+			if(studentIndex.hasCheating(this.props.clusters[i], assignment) == false) {
+				nextIndex = i;
+				break;
+			}
+		}
+
+		if(nextIndex > 0) {
+			this.changeCluster(nextIndex);
+		}
+	},
 	prev: function() {
 		var currentIndex = this.props.data.state.args.cluster;
 		var nextIndex = Math.max(currentIndex - 1, 0);
@@ -497,12 +518,17 @@ var ClusterPicker = React.createClass({
 		ViewState.setState(data.state.page, args);
 	},
 	renderClusters: function(clusters, current) {
+		var data = this.props.data;
+		var args = data.state.args;
+		var studentIndex = data.studentIndex;
+		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
 		return (
 			<select onChange={this.handleSelectChange} value={current}>
 				{
 					clusters.map(function(cluster, index) {
 						cluster.evaluation = cluster.evaluation || 0; // For spot check
-						var evalString = cluster.evaluation === 0 ? "?" : (cluster.evaluation === 1 ? "+" : "-");
+						var hasCheating = studentIndex.hasCheating(cluster, assignment);
+						var evalString = (cluster.evaluation === 0 && !hasCheating) ? "?" : (hasCheating ? "+" : "-");
 						var clusterString = "(" + evalString + ") cluster " + (index + 1) + " | " + cluster.members[0].student;
 						return <option key={index} value={index}>{clusterString}</option>;
 					})
@@ -533,6 +559,8 @@ var ClusterPicker = React.createClass({
 				<div>
 					<button onClick={this.prev} disabled={clusterIndex === 0}>Prev</button>
 					<button onClick={this.next} disabled={clusterIndex === (clusters.length - 1)}>Next</button>
+					<br/>
+					<button style={{width: "100%"}} onClick={this.nextUnrated}>Next Unrated</button>
 				</div>
 				<br/>
 				<div>{"Cluster: " + (args.cluster + 1) + "/" + clusters.length}</div>
@@ -656,12 +684,6 @@ var Ratings = React.createClass({
 		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
 		var info = data.studentIndex.queryDetectors(cluster.members, assignment);
 
-		// Remove the current detector
-		var pos = info.indexOf(detector);
-		if(pos >= 0) {
-			info.splice(pos, 1);
-		}
-
 		// Render
 		if(info.length === 0) {
 			return null;
@@ -682,16 +704,21 @@ var Ratings = React.createClass({
 			return <noscript />;
 		}
 
+		var indexInfo = this.getIndexInfo();
+
+		var data = this.props.data;
+		var page = data.state.page;
+		var args = data.state.args;
+		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+
 		var cheatingClass = "cheating";
 		var falsePosClass = "falsePos";
-		if(cluster.evaluation === 1) {
+		if(data.studentIndex.hasCheating(cluster, assignment)) {
 			cheatingClass += " selected";
 		}
 		if(cluster.evaluation === 2) {
 			falsePosClass += " selected";
 		}
-
-		var indexInfo = this.getIndexInfo();
 
 		return (
 			<div className="ratings section">

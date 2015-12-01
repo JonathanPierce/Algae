@@ -60,7 +60,7 @@ var StudentIndex = (function() {
 			if(index[student] && index[student][assignment]) {
 				var assignData = index[student][assignment];
 				for(var key in assignData) {
-					if(assignData.hasOwnProperty(key) && detectors.indexOf(key) === -1) {
+					if(assignData.hasOwnProperty(key) && detectors.indexOf(key) === -1 && assignData[key].length > 0) {
 						detectors.push(key);
 					}
 				}
@@ -71,7 +71,7 @@ var StudentIndex = (function() {
 			if(partner && index[partner] && index[partner][assignment]) {
 				var assignData = index[partner][assignment];
 				for(var key in assignData) {
-					if(assignData.hasOwnProperty(key) && detectors.indexOf(key) === -1) {
+					if(assignData.hasOwnProperty(key) && detectors.indexOf(key) === -1 && assignData[key].length > 0) {
 						detectors.push(key);
 					}
 				}
@@ -79,6 +79,19 @@ var StudentIndex = (function() {
 		}
 
 		return detectors;
+	}
+
+	// Tells whether a cluster has cheating, based on the inverted index
+	var hasCheating = function(cluster, assignment) {
+		if(cluster.evaluation === 1) {
+			return true;
+		}
+
+		if(cluster.evaluation === 2) {
+			return false;
+		}
+
+		return queryDetectors(cluster.members, assignment).length > 0;
 	}
 
 	var reset = function() {
@@ -91,6 +104,7 @@ var StudentIndex = (function() {
 		remove: remove,
 		query: query,
 		queryDetectors: queryDetectors,
+		hasCheating: hasCheating,
 		reset: reset
 	};
 })();
