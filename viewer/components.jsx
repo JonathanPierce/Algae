@@ -494,7 +494,7 @@ var ClusterPicker = React.createClass({
 
 		nextIndex = -1;
 		for(var i = currentIndex + 1; i < this.props.clusters.length; i++) {
-			if(studentIndex.hasCheating(this.props.clusters[i], assignment) == false) {
+			if(studentIndex.hasCheating(this.props.clusters[i], assignment) == false && this.props.clusters[i].evaluation === 0) {
 				nextIndex = i;
 				break;
 			}
@@ -692,7 +692,7 @@ var Ratings = React.createClass({
 		return (
 			<div className="indexInfo">
 				{
-					"Member(s) of this cluster have been found to be cheating by detector" + (info.length > 1 ? "s: " : ": ") + info.join(", ") + "."
+					(cluster.evaluation === 0 ? "AUTO-IMPLICATED. " : "") + "Member(s) of this cluster have been found to be cheating by detector" + (info.length > 1 ? "s: " : ": ") + info.join(", ") + "."
 				}
 			</div>
 		);
