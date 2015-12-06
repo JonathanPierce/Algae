@@ -333,13 +333,13 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 		collectData();
 
 		// Collect more data, now that we have this initial data
-		// TODO
+		secondPass();
 
 		// Save the results
 		var results = "";
 
 		results += "There are " + students.length + " total students in the corpus.\n";
-		results += "Of which, " + cheaters.length + " or " + ((cheaters.length / students.length) * 100.0) + "% were found to be cheating.\n\n";
+		results += "Of which, " + cheaters.length + " or " + percent(cheaters.length, students.length) + "% were found to be cheating.\n\n";
 
 		results += "Results per detector/assignment:\n\n";
 
@@ -353,9 +353,20 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 				results += "Total number of unique students found cheating -> " + shortcut.cheaters.length + "\n";
 				results += "Directly implicated clusters -> " + shortcut.numDirect + "\n";
 				results += "Auto-implicated clusters -> " + shortcut.numAuto + "\n";
-				results += "False positive clusters -> " + shortcut.numFalsePos + "\n\n";
+				results += "False positive clusters -> " + shortcut.numFalsePos + "\n";
+				var totalForAssign = data["ASSIGN"][assign].length;
+				results += "Students out of total for this assignment: " + percent(shortcut.cheaters.length, totalForAssign) + "%\n\n";
 			});
 		});
+
+		results += "Results per assignment:\n\n";
+		for(var key in data["ASSIGN"]) {
+			if(data["ASSIGN"].hasOwnProperty(key)) {
+				var assign = data["ASSIGN"][key];
+				results += "" + key + ": " + assign.length + " cheaters, or " + percent(assign.length, students.length) + "% of total students cheated.\n";
+			}
+		}
+		results += "\n";
 
 		cb(results);
 	});
@@ -430,4 +441,31 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 			});
 		});
 	}
+
+	function secondPass() {
+		data["ASSIGN"] = {};
+
+		// Find total cheaters for an assignment
+		corpusData.detectors.map(function(detector) {
+			detector.assignments.map(function(assign) {
+					if(!data["ASSIGN"][assign]) {
+						data["ASSIGN"][assign] = [];
+					}
+
+					var shortcut = data[detector.name][assign];
+					var dest = data["ASSIGN"][assign];
+
+					shortcut.cheaters.map(function(student) {
+						if(dest.indexOf(student) === -1) {
+							dest.push(student);
+						}
+					});
+			});
+		});
+	}
+
+	function percent(num, denom) {
+		return ((num / denom) * 100.0).toFixed(2);
+	}
+
 }
