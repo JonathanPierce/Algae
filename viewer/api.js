@@ -324,51 +324,77 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 	var students = [];
 	var cheaters = [];
 	var data = {};
+	var semesterTotals = {};
 
 	var path = corpusData.corpus_path + "../../students.txt";
 	$.get("/file?path=" + path, function(studentText) {
-		students = studentText.trim().split("\n");
+		path = corpusData.corpus_path + "../../semesters.csv";
+		$.get("/file?path=" + path, function(semesterText) {
+			// Build inital structure
+			students = studentText.trim().split("\n");
 
-		// Collect the data
-		collectData();
+			var lines = semesterText.trim().split("\n");
+			lines.map(function(line) {
+				var sem = line.split(",")[1].trim();
 
-		// Collect more data, now that we have this initial data
-		secondPass();
+				if(!semesterTotals[sem]) {
+					semesterTotals[sem] = 0;
+				}
 
-		// Save the results
-		var results = "";
-
-		results += "There are " + students.length + " total students in the corpus.\n";
-		results += "Of which, " + cheaters.length + " or " + percent(cheaters.length, students.length) + "% were found to be cheating.\n\n";
-
-		results += "Results per detector/assignment:\n\n";
-
-		corpusData.detectors.map(function(detector) {
-			detector.assignments.map(function(assign) {
-				shortcut = data[detector.name][assign];
-
-				results += "For " + detector.name + "/" + assign + ":\n";
-				results += "Total clusters -> " + shortcut.totalCount + "\n";
-				results += "Total unique students in clusters -> " + shortcut.uniqueMembers.length + "\n";
-				results += "Total number of unique students found cheating -> " + shortcut.cheaters.length + "\n";
-				results += "Directly implicated clusters -> " + shortcut.numDirect + "\n";
-				results += "Auto-implicated clusters -> " + shortcut.numAuto + "\n";
-				results += "False positive clusters -> " + shortcut.numFalsePos + "\n";
-				var totalForAssign = data["ASSIGN"][assign].length;
-				results += "Students out of total for this assignment: " + percent(shortcut.cheaters.length, totalForAssign) + "%\n\n";
+				semesterTotals[sem] += 1;
 			});
-		});
 
-		results += "Results per assignment:\n\n";
-		for(var key in data["ASSIGN"]) {
-			if(data["ASSIGN"].hasOwnProperty(key)) {
-				var assign = data["ASSIGN"][key];
-				results += "" + key + ": " + assign.length + " cheaters, or " + percent(assign.length, students.length) + "% of total students cheated.\n";
+			// Collect the data
+			collectData();
+
+			// Collect more data, now that we have this initial data
+			secondPass();
+
+			// Save the results
+			var results = "";
+
+			results += "There are " + students.length + " total students in the corpus.\n";
+			results += "Of which, " + cheaters.length + " or " + percent(cheaters.length, students.length) + "% were found to be cheating.\n\n";
+
+			results += "Results per detector/assignment:\n\n";
+
+			corpusData.detectors.map(function(detector) {
+				detector.assignments.map(function(assign) {
+					shortcut = data[detector.name][assign];
+
+					results += "For " + detector.name + "/" + assign + ":\n";
+					results += "Total clusters -> " + shortcut.totalCount + "\n";
+					results += "Total unique students in clusters -> " + shortcut.uniqueMembers.length + "\n";
+					results += "Total number of unique students found cheating -> " + shortcut.cheaters.length + "\n";
+					results += "Directly implicated clusters -> " + shortcut.numDirect + "\n";
+					results += "Auto-implicated clusters -> " + shortcut.numAuto + "\n";
+					results += "False positive clusters -> " + shortcut.numFalsePos + "\n";
+					var totalForAssign = data["ASSIGN"][assign].length;
+					results += "Students out of total for this assignment: " + percent(shortcut.cheaters.length, totalForAssign) + "%\n\n";
+				});
+			});
+
+			results += "Results per assignment:\n\n";
+			for(var key in data["ASSIGN"]) {
+				if(data["ASSIGN"].hasOwnProperty(key)) {
+					var assign = data["ASSIGN"][key];
+					results += "" + key + ": " + assign.length + " cheaters, or " + percent(assign.length, students.length) + "% of total students cheated.\n";
+				}
 			}
-		}
-		results += "\n";
+			results += "\n";
 
-		cb(results);
+			results += "Results per semester:\n\n";
+			results += "Number of intra-semester cheating clusters -> " + data["SEMESTER"].numIntra + "\n";
+			results += "Number of inter-semester cheating clusters -> " + data["SEMESTER"].numInter + "\n";
+			for(var key in data["SEMESTER"]) {
+				if(data["SEMESTER"].hasOwnProperty(key) && key !== "numIntra" && key !== "numInter") {
+					results += "" + key + ": " + data["SEMESTER"][key].length + " cheaters of " + semesterTotals[key] + ", or " + percent(data["SEMESTER"][key].length, semesterTotals[key]) + "%.\n";
+				}
+			}
+			results += "\n";
+
+			cb(results);
+		});
 	});
 
 	// Loop over every cluster, increasing appropriate counts
@@ -444,6 +470,9 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 
 	function secondPass() {
 		data["ASSIGN"] = {};
+		data["SEMESTER"] = {};
+		data["SEMESTER"].numIntra = 0;
+		data["SEMESTER"].numInter = 0;
 
 		// Find total cheaters for an assignment
 		corpusData.detectors.map(function(detector) {
@@ -460,6 +489,49 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 							dest.push(student);
 						}
 					});
+			});
+		});
+
+		// Calculate the number of cheaters from each semester
+		// Along with info a intra/inter-semester cheating
+		corpusData.detectors.map(function(detector) {
+			detector.assignments.map(function(assign) {
+				var key = ViewState.getClusterKey(false, assign, detector.name);
+				var clusters = clusterDB[key];
+
+				clusters.map(function(cluster) {
+					var initSemester = cluster.members[0].semester;
+					var intra = true;
+
+					cluster.members.map(function(member) {
+						if(member.semester !== initSemester) {
+							intra = false; // This cluster is inter-semester
+						}
+
+						if(!data["SEMESTER"][member.semester]) {
+							data["SEMESTER"][member.semester] = [];
+						}
+
+						var shortcut = data["SEMESTER"][member.semester];
+
+						// If they cheated, add to the semester
+						if(shortcut.indexOf(member.student) === -1 && cheaters.indexOf(member.student) !== -1) {
+							shortcut.push(member.student);
+						}
+
+						if(member.partner !== null && shortcut.indexOf(member.partner) === -1 && cheaters.indexOf(member.partner) !== -1) {
+							shortcut.push(member.partner);
+						}
+					});
+
+					if(index.hasCheating(cluster, assign)) {
+						if(intra) {
+							data["SEMESTER"].numIntra += 1;
+						} else {
+							data["SEMESTER"].numInter += 1;
+						}
+					}
+				});
 			});
 		});
 	}
