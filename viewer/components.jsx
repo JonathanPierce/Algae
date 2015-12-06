@@ -148,8 +148,23 @@ var ImportPage = React.createClass({
 
 // Analyze page
 var AnalyzePage = React.createClass({
+	getInitialState: function() {
+		return {
+			text: "loading..."
+		};
+	},
+	componentDidMount: function() {
+		var that = this;
+		ViewState.analyze(function(text) {
+			that.setState({text: text});
+		});
+	},
 	render: function() {
-		return <div>Analyze page</div>;
+		return (
+				<div className="analyzePage">
+					<textarea ref="text" disabled="true" value={this.state.text}></textarea>
+				</div>
+		);
 	}
 });
 

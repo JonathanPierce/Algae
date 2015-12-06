@@ -184,11 +184,22 @@ var ImportPage = React.createClass({
 var AnalyzePage = React.createClass({
 	displayName: "AnalyzePage",
 
+	getInitialState: function getInitialState() {
+		return {
+			text: "loading..."
+		};
+	},
+	componentDidMount: function componentDidMount() {
+		var that = this;
+		ViewState.analyze(function (text) {
+			that.setState({ text: text });
+		});
+	},
 	render: function render() {
 		return React.createElement(
 			"div",
-			null,
-			"Analyze page"
+			{ className: "analyzePage" },
+			React.createElement("textarea", { ref: "text", disabled: "true", value: this.state.text })
 		);
 	}
 });
@@ -266,7 +277,7 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have a selected detector and assignment?
-		if (page === "evaluate" && (typeof args.detector === 'undefined' || typeof args.assignment === 'undefined')) {
+		if (page === "evaluate" && (typeof args.detector === "undefined" || typeof args.assignment === "undefined")) {
 			// Select the first one
 			args.detector = 0;
 			args.assignment = 0;
@@ -301,7 +312,7 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have a selected cluster/students?
-		if (typeof args.cluster === 'undefined') {
+		if (typeof args.cluster === "undefined") {
 			// Select the first
 			args.cluster = 0;
 			args.students = [0, 1];
@@ -621,7 +632,7 @@ var ClusterPicker = React.createClass({
 			"select",
 			{ onChange: this.handleSelectChange, value: current },
 			clusters.map(function (cluster, index) {
-				cluster.evaluation = cluster.evaluation || 0; // For spot check
+				cluster.evaluation = cluster.evaluation || 0;
 				var hasCheating = studentIndex.hasCheating(cluster, assignment);
 				var evalString = cluster.evaluation === 0 && !hasCheating ? "?" : hasCheating ? "+" : "-";
 				var clusterString = "(" + evalString + ") cluster " + (index + 1) + " | " + cluster.members[0].student;
@@ -1024,4 +1035,5 @@ var ExportPage = React.createClass({
 		);
 	}
 });
+// For spot check
 

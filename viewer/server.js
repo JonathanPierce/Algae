@@ -65,7 +65,7 @@ var get_corpus = function(callback) {
 	});
 };
 
-// Converts a job and assignmets list into a list of files
+// Converts a job and assignments list into a list of files
 var get_file_list = function(job, assignment) {
 	// helper functions
 	function make_safe(path) {
@@ -269,13 +269,13 @@ var responders = {
             	// Grab the file from disk
             	get_file(file_path, function (data) {
 	                if (data) {
-	                	// Cache the clusters
-	                	clusters = JSON.parse(data);
-	                	clusterCache[file_path] = clusters;
+				    	// Cache the clusters
+				    	clusters = JSON.parse(data);
+				    	clusterCache[file_path] = clusters;
 
-	                	// Return the JSON
+	                    // Return the JSON
 	                    res.writeHead(200, { 'Content-Type': file_type });
-	                    res.end(data);
+	                    res.end();
 	                } else {
 	                    // 404
 	                    responders["404"](req, res);

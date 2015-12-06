@@ -301,6 +301,10 @@ var ViewState = (function() {
 		flush();
 	}
 
+	var analyze = function(cb) {
+		Analyzer(studentIndex, clusterDB, corpusData, cb);
+	}
+
 	// return out an interface
 	return {
 		start: start,
@@ -309,7 +313,121 @@ var ViewState = (function() {
 		unsetSpotData: unsetSpotData,
 		setState: setState,
 		getClusterKey: getClusterKey,
-		setCluster: setCluster
+		setCluster: setCluster,
+		analyze: analyze
 	};
 
 })();
+
+// returns analysis of data as a string
+var Analyzer = function(index, clusterDB, corpusData, cb) {
+	var students = [];
+	var cheaters = [];
+	var data = {};
+
+	var path = corpusData.corpus_path + "../../students.txt";
+	$.get("/file?path=" + path, function(studentText) {
+		students = studentText.trim().split("\n");
+
+		// Collect the data
+		collectData();
+
+		// Collect more data, now that we have this initial data
+		// TODO
+
+		// Save the results
+		var results = "";
+
+		results += "There are " + students.length + " total students in the corpus.\n";
+		results += "Of which, " + cheaters.length + " or " + ((cheaters.length / students.length) * 100.0) + "% were found to be cheating.\n\n";
+
+		results += "Results per detector/assignment:\n\n";
+
+		corpusData.detectors.map(function(detector) {
+			detector.assignments.map(function(assign) {
+				shortcut = data[detector.name][assign];
+
+				results += "For " + detector.name + "/" + assign + ":\n";
+				results += "Total clusters -> " + shortcut.totalCount + "\n";
+				results += "Total unique students in clusters -> " + shortcut.uniqueMembers.length + "\n";
+				results += "Total number of unique students found cheating -> " + shortcut.cheaters.length + "\n";
+				results += "Directly implicated clusters -> " + shortcut.numDirect + "\n";
+				results += "Auto-implicated clusters -> " + shortcut.numAuto + "\n";
+				results += "False positive clusters -> " + shortcut.numFalsePos + "\n\n";
+			});
+		});
+
+		cb(results);
+	});
+
+	// Loop over every cluster, increasing appropriate counts
+	function collectData() {
+		corpusData.detectors.map(function(detector) {
+			data[detector.name] = {};
+
+			detector.assignments.map(function(assign) {
+				data[detector.name][assign] = {};
+
+				var key = ViewState.getClusterKey(false, assign, detector.name);
+				var clusters = clusterDB[key];
+
+				// Save the total cluster count
+				data[detector.name][assign].totalCount = clusters.length;
+
+				// Stub out data
+				data[detector.name][assign].uniqueMembers = [];
+				data[detector.name][assign].cheaters = [];
+				data[detector.name][assign].numDirect = 0;
+				data[detector.name][assign].numAuto = 0;
+				data[detector.name][assign].numFalsePos = 0;
+
+				clusters.map(function(cluster) {
+					// Add the unique members to both this cluster and overall
+					var members = cluster.members.reduce(function(prev, member) {
+						prev.push(member.student);
+
+						if(member.partner !== null) {
+							prev.push(member.partner);
+						}
+
+						return prev;
+					}, []);
+
+					members.map(function(member) {
+						var shortcut = data[detector.name][assign].uniqueMembers;
+						if(shortcut.indexOf(member) === -1) {
+							shortcut.push(member);
+						}
+					});
+
+					// Is the cluster cheating?
+					var cheating = index.hasCheating(cluster, assign);
+
+					if(cheating) {
+						// Make sure each member is in the total cheaters index
+						members.map(function(member) {
+							if(cheaters.indexOf(member) === -1) {
+								cheaters.push(member);
+							}
+
+							// Count this as a cheater for this detector/assignment
+							var shortcut = data[detector.name][assign].cheaters;
+							if(shortcut.indexOf(member) === -1) {
+								shortcut.push(member);
+							}
+						});
+
+						// Direct or auto-implicated
+						if(cluster.evaluation === 1) {
+							data[detector.name][assign].numDirect += 1;
+						} else {
+							data[detector.name][assign].numAuto += 1;
+						}
+					} else {
+						data[detector.name][assign].numFalsePos += 1;
+					}
+				});
+			});
+		});
+	}
+}

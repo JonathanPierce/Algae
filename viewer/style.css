@@ -185,3 +185,14 @@ html, body {
 	margin-top: 12px;
 	font-size: 8pt;
 }
+
+.analyzePage {
+	height: 100%;
+}
+
+.analyzePage textarea {
+	width: 100%;
+	height: 100%;
+	background-color: white;
+	border: none;
+}
