@@ -325,6 +325,7 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 	var cheaters = [];
 	var data = {};
 	var semesterTotals = {};
+	var grades = {};
 
 	var path = corpusData.corpus_path + "../../students.txt";
 	$.get("/file?path=" + path, function(studentText) {
@@ -393,7 +394,24 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 			}
 			results += "\n";
 
-			cb(results);
+			// GRADES STUFF - FOR RESEARCH, REMOVE FOR PRODUCTION
+			path = corpusData.corpus_path + "../../cs225final.csv";
+			$.get("/file?path=" + path, function(final225) {
+				path = corpusData.corpus_path + "../../cs241final.csv";
+				$.get("/file?path=" + path, function(final241) {
+					processGrades(final225, final241);
+
+					results += "Grade data:\n\n";
+					results += "For " + grades.cs225count + " CS225 students total with final grades, average grade is " + grades.cs225avg.toFixed(2) + ".\n";
+					results += "For " + grades.cs225cheatCount + " CS225 cheaters with final grades, average grade is " + grades.cs225cheatAvg.toFixed(2) + ".\n";
+					results += "For " + (grades.cs225count - grades.cs225cheatCount) + " honest CS225 student with final grades, average grade is " + grades.cs225honestAvg.toFixed(2) + ".\n";
+					results += "For " + grades.cs241count + " CS241 students total with final grades, average grade is " + grades.cs241avg.toFixed(2) + ".\n";
+					results += "For " + grades.cs241cheatCount + " CS241 cheaters with final grades, average grade is " + grades.cs241cheatAvg.toFixed(2) + ".\n";
+					results += "For " + (grades.cs241count - grades.cs241cheatCount) + " honest CS241 student with final grades, average grade is " + grades.cs241honestAvg.toFixed(2) + ".\n\n";
+
+					cb(results);
+				});
+			});
 		});
 	});
 
@@ -468,6 +486,7 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 		});
 	}
 
+	// Now that we have first pass data, calculate more stats
 	function secondPass() {
 		data["ASSIGN"] = {};
 		data["SEMESTER"] = {};
@@ -534,6 +553,89 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 				});
 			});
 		});
+	}
+
+  // Calculate grades data
+	function processGrades(final225, final241) {
+		var gradeMap = {
+			"F": 0,
+			"D-": 1,
+			"D": 2,
+			"D+": 3,
+			"C-": 4,
+			"C": 5,
+			"C+": 6,
+			"B-": 7,
+			"B": 8,
+			"B+": 9,
+			"A-": 10,
+			"A": 11,
+			"A+": 12
+		};
+
+		grades.cs225count = 0;
+		grades.cs225cheatCount = 0;
+		grades.cs225avg = 0;
+		grades.cs225cheatAvg = 0;
+		grades.cs225honestAvg = 0;
+		grades.cs241count = 0;
+		grades.cs241avg = 0;
+		grades.cs241cheatCount = 0;
+		grades.cs241cheatAvg = 0;
+		grades.cs241honestAvg = 0;
+
+		var final225map = {};
+		var final241map = {};
+
+		var final225lines = final225.trim().split("\n");
+		final225lines.map(function(line) {
+			var parts = line.split(", ");
+			if(parts[2] !== "ABS") {
+				final225map[parts[0]] = gradeMap[parts[2]];
+			}
+		});
+
+		var final241lines = final241.trim().split("\n");
+		final241lines.map(function(line) {
+			var parts = line.split(", ");
+			if(parts[2] !== "ABS") {
+				final241map[parts[0]] = gradeMap[parts[2]];
+			}
+		});
+
+		students.map(function(student) {
+			if(final225map[student]) {
+				grades.cs225count += 1;
+				grades.cs225avg += final225map[student];
+
+				if(cheaters.indexOf(student) !== -1) {
+					grades.cs225cheatCount += 1;
+					grades.cs225cheatAvg += final225map[student];
+				} else {
+					grades.cs225honestAvg += final225map[student];
+				}
+			}
+		});
+		grades.cs225avg = grades.cs225avg / grades.cs225count;
+		grades.cs225cheatAvg = grades.cs225cheatAvg / grades.cs225cheatCount;
+		grades.cs225honestAvg = grades.cs225honestAvg / (grades.cs225count - grades.cs225cheatCount);
+
+		students.map(function(student) {
+			if(final241map[student]) {
+				grades.cs241count += 1;
+				grades.cs241avg += final241map[student];
+
+				if(cheaters.indexOf(student) !== -1) {
+					grades.cs241cheatCount += 1;
+					grades.cs241cheatAvg += final241map[student];
+				} else {
+					grades.cs241honestAvg += final241map[student];
+				}
+			}
+		});
+		grades.cs241avg = grades.cs241avg / grades.cs241count;
+		grades.cs241cheatAvg = grades.cs241cheatAvg / grades.cs241cheatCount;
+		grades.cs241honestAvg = grades.cs241honestAvg / (grades.cs241count - grades.cs241cheatCount);
 	}
 
 	function percent(num, denom) {
