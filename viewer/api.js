@@ -326,6 +326,7 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 	var data = {};
 	var semesterTotals = {};
 	var grades = {};
+	var cheaterCounts = {};
 
 	var path = corpusData.corpus_path + "../../students.txt";
 	$.get("/file?path=" + path, function(studentText) {
@@ -394,6 +395,14 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 			}
 			results += "\n";
 
+			results += "Number of times students cheated:\n\n";
+			for(var key in data["CHEATERCOUNT"]) {
+				if(data["CHEATERCOUNT"].hasOwnProperty(key)) {
+					results += "" + key + ": " + data["CHEATERCOUNT"][key] + " or " + percent(data["CHEATERCOUNT"][key], cheaters.length) + "%.\n";
+				}
+			}
+			results += "\n";
+
 			// GRADES STUFF - FOR RESEARCH, REMOVE FOR PRODUCTION
 			path = corpusData.corpus_path + "../../cs225final.csv";
 			$.get("/file?path=" + path, function(final225) {
@@ -408,6 +417,46 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 					results += "For " + grades.cs241count + " CS241 students total with final grades, average grade is " + grades.cs241avg.toFixed(2) + ".\n";
 					results += "For " + grades.cs241cheatCount + " CS241 cheaters with final grades, average grade is " + grades.cs241cheatAvg.toFixed(2) + ".\n";
 					results += "For " + (grades.cs241count - grades.cs241cheatCount) + " honest CS241 student with final grades, average grade is " + grades.cs241honestAvg.toFixed(2) + ".\n\n";
+
+					results += "Honest CS225 grade distribution:\n\n";
+					for(var grade in grades.cs225honestDist) {
+						if(grades.cs225honestDist.hasOwnProperty(grade)) {
+							results += "" + grade + ": " +  grades.cs225honestDist[grade] + "\n";
+						}
+					}
+					results += "\n";
+
+					results += "Cheating CS225 grade distribution:\n\n";
+					for(var grade in grades.cs225cheatingDist) {
+						if(grades.cs225cheatingDist.hasOwnProperty(grade)) {
+							results += "" + grade + ": " +  grades.cs225cheatingDist[grade] + "\n";
+						}
+					}
+					results += "\n";
+
+					results += "Honest CS241 grade distribution:\n\n";
+					for(var grade in grades.cs241honestDist) {
+						if(grades.cs241honestDist.hasOwnProperty(grade)) {
+							results += "" + grade + ": " +  grades.cs241honestDist[grade] + "\n";
+						}
+					}
+					results += "\n";
+
+					results += "Cheating CS241 grade distribution:\n\n";
+					for(var grade in grades.cs241cheatingDist) {
+						if(grades.cs241cheatingDist.hasOwnProperty(grade)) {
+							results += "" + grade + ": " +  grades.cs241cheatingDist[grade] + "\n";
+						}
+					}
+					results += "\n";
+
+					results += "Grade in CS225 per number of cheating instances:\n\n";
+					for(var count in grades.perCount) {
+						if(grades.perCount.hasOwnProperty(count)) {
+							results += "" + count + ": " + grades.perCount[count] + "\n";
+						}
+					}
+					results += "\n";
 
 					cb(results);
 				});
@@ -507,9 +556,31 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 						if(dest.indexOf(student) === -1) {
 							dest.push(student);
 						}
+
+						if(!cheaterCounts[student]) {
+							cheaterCounts[student] = [];
+						}
+						if(cheaterCounts[student].indexOf(assign) === -1) {
+							cheaterCounts[student].push(assign);
+						}
 					});
 			});
 		});
+
+		// Calculate cheater count distribution
+		data["CHEATERCOUNT"] = {};
+		for(var key in cheaterCounts) {
+			if(cheaterCounts.hasOwnProperty(key)) {
+				var value = cheaterCounts[key].length.toString();
+
+				if(!data["CHEATERCOUNT"][value]) {
+					data["CHEATERCOUNT"][value] = 0;
+				}
+
+				data["CHEATERCOUNT"][value] += 1;
+			}
+		}
+
 
 		// Calculate the number of cheaters from each semester
 		// Along with info a intra/inter-semester cheating
@@ -584,35 +655,51 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 		grades.cs241cheatAvg = 0;
 		grades.cs241honestAvg = 0;
 
+		grades.cs225honestDist = {};
+		grades.cs225cheatingDist = {};
+		grades.cs241honestDist = {};
+		grades.cs241cheatingDist = {};
+
+		for(var grade in gradeMap) {
+			if(gradeMap.hasOwnProperty(grade)) {
+				grades.cs225honestDist[grade] = 0;
+				grades.cs241honestDist[grade] = 0;
+				grades.cs225cheatingDist[grade] = 0;
+				grades.cs241cheatingDist[grade] = 0;
+			}
+		}
+
 		var final225map = {};
 		var final241map = {};
 
 		var final225lines = final225.trim().split("\n");
 		final225lines.map(function(line) {
 			var parts = line.split(", ");
-			if(parts[2] !== "ABS") {
-				final225map[parts[0]] = gradeMap[parts[2]];
+			if(gradeMap[parts[2]] >= 0) {
+				final225map[parts[0]] = parts[2];
 			}
 		});
 
 		var final241lines = final241.trim().split("\n");
 		final241lines.map(function(line) {
 			var parts = line.split(", ");
-			if(parts[2] !== "ABS") {
-				final241map[parts[0]] = gradeMap[parts[2]];
+			if(gradeMap[parts[2]] >= 0) {
+				final241map[parts[0]] = parts[2];
 			}
 		});
 
 		students.map(function(student) {
 			if(final225map[student]) {
 				grades.cs225count += 1;
-				grades.cs225avg += final225map[student];
+				grades.cs225avg += gradeMap[final225map[student]];
 
 				if(cheaters.indexOf(student) !== -1) {
 					grades.cs225cheatCount += 1;
-					grades.cs225cheatAvg += final225map[student];
+					grades.cs225cheatAvg += gradeMap[final225map[student]];
+					grades.cs225cheatingDist[final225map[student]] += 1;
 				} else {
-					grades.cs225honestAvg += final225map[student];
+					grades.cs225honestAvg += gradeMap[final225map[student]];
+					grades.cs225honestDist[final225map[student]] += 1;
 				}
 			}
 		});
@@ -623,19 +710,33 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 		students.map(function(student) {
 			if(final241map[student]) {
 				grades.cs241count += 1;
-				grades.cs241avg += final241map[student];
+				grades.cs241avg += gradeMap[final241map[student]];
 
 				if(cheaters.indexOf(student) !== -1) {
 					grades.cs241cheatCount += 1;
-					grades.cs241cheatAvg += final241map[student];
+					grades.cs241cheatAvg += gradeMap[final241map[student]];
+					grades.cs241cheatingDist[final241map[student]] += 1;
 				} else {
-					grades.cs241honestAvg += final241map[student];
+					grades.cs241honestAvg += gradeMap[final241map[student]];
+					grades.cs241honestDist[final241map[student]] += 1;
 				}
 			}
 		});
 		grades.cs241avg = grades.cs241avg / grades.cs241count;
 		grades.cs241cheatAvg = grades.cs241cheatAvg / grades.cs241cheatCount;
 		grades.cs241honestAvg = grades.cs241honestAvg / (grades.cs241count - grades.cs241cheatCount);
+
+		grades.perCount = {"1": 0, "2": 0, "3": 0, "4": 0};
+		for(var student in cheaterCounts) {
+			if(cheaterCounts.hasOwnProperty(student) && final225map[student]) {
+				var key = cheaterCounts[student].length.toString();
+				grades.perCount[key] += gradeMap[final225map[student]];
+			}
+		}
+		grades.perCount["1"] = grades.perCount["1"] / data["CHEATERCOUNT"]["1"];
+		grades.perCount["2"] = grades.perCount["2"] / data["CHEATERCOUNT"]["2"];
+		grades.perCount["3"] = grades.perCount["3"] / data["CHEATERCOUNT"]["3"];
+		grades.perCount["4"] = grades.perCount["4"] / data["CHEATERCOUNT"]["4"];
 	}
 
 	function percent(num, denom) {
