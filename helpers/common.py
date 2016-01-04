@@ -58,7 +58,7 @@ class PairResults:
 	def add(self, pair):
 		if self.handle == None:
 			# create a blank file
-			self.helpers.writeToProcessed("", self.assignment, self.end)			
+			self.helpers.writeToProcessed("", self.assignment, self.end)
 
 			self.handle = open(self.filename, "w+")
 
@@ -126,23 +126,12 @@ class Cluster:
 				return
 		self.members.append(newMember)
 
-	# Helper function for CS225 code. Ignore.
-	def mp7exception(self):
-		# if all members come from fa11 or sp12
-		# and the file is maze.cpp, then allow partners
-		allEarly = True
-		for member in self.members:
-			if member.semester not in ["fa11", "sp12"]:
-				allEarly = False
-
-		return allEarly and self.file == "maze.cpp"
-
 	def hasCheating(self):
 		if len(self.members) < 2:
 			# can't have cheating without at least two people
 			return False
 
-		if len(self.members) == 2 and (self.allowPartners or self.mp7exception()):
+		if len(self.members) == 2 and self.allowPartners:
 			member1 = self.members[0]
 			member2 = self.members[1]
 			if member1.partner == None or member2.partner == None:
@@ -150,7 +139,7 @@ class Cluster:
 				if self.allowMistakes == True:
 					mistake = (member1.partner == None and member2.partner == member1.student) or (member2.partner == None and member1.partner == member2.student)
 					return not mistake
-					
+
 				# assume both must have a partner
 				return True
 
