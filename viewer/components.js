@@ -277,7 +277,7 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have a selected detector and assignment?
-		if (page === "evaluate" && (typeof args.detector === "undefined" || typeof args.assignment === "undefined")) {
+		if (page === "evaluate" && (typeof args.detector === 'undefined' || typeof args.assignment === 'undefined')) {
 			// Select the first one
 			args.detector = 0;
 			args.assignment = 0;
@@ -312,7 +312,7 @@ var Sidebar = React.createClass({
 		}
 
 		// Do we have a selected cluster/students?
-		if (typeof args.cluster === "undefined") {
+		if (typeof args.cluster === 'undefined') {
 			// Select the first
 			args.cluster = 0;
 			args.students = [0, 1];
@@ -632,7 +632,7 @@ var ClusterPicker = React.createClass({
 			"select",
 			{ onChange: this.handleSelectChange, value: current },
 			clusters.map(function (cluster, index) {
-				cluster.evaluation = cluster.evaluation || 0;
+				cluster.evaluation = cluster.evaluation || 0; // For spot check
 				var hasCheating = studentIndex.hasCheating(cluster, assignment);
 				var evalString = cluster.evaluation === 0 && !hasCheating ? "?" : hasCheating ? "+" : "-";
 				var clusterString = "(" + evalString + ") cluster " + (index + 1) + " | " + cluster.members[0].student;
@@ -907,8 +907,12 @@ var ExportSave = React.createClass({
 	displayName: "ExportSave",
 
 	"export": function _export() {
+		var data = this.props.data;
+		var args = data.state.args;
+
 		ViewState.setState("export", {
-			clusters: this.props.clusters
+			clusters: this.props.clusters,
+			assignment: data.corpusData.detectors[args.detector].assignments[args.assignment]
 		});
 	},
 	reimport: function reimport() {
@@ -976,12 +980,13 @@ var ExportPage = React.createClass({
 	displayName: "ExportPage",
 
 	getText: function getText(clusters) {
+		var data = this.props.data;
 		var final = [];
 
 		// Get the cheating clusters
 		for (var i = 0; i < clusters.length; i++) {
 			var cluster = clusters[i];
-			if (cluster.evaluation === 1) {
+			if (data.studentIndex.hasCheating(cluster, data.state.args.assignment)) {
 				final.push(cluster);
 			}
 		}
@@ -1019,7 +1024,8 @@ var ExportPage = React.createClass({
 		return JSON.stringify(obj, null, 2);
 	},
 	render: function render() {
-		var clusters = this.props.data.state.args.clusters;
+		var data = this.props.data;
+		var clusters = data.state.args.clusters;
 
 		var text = this.getText(clusters);
 
@@ -1035,5 +1041,4 @@ var ExportPage = React.createClass({
 		);
 	}
 });
-// For spot check
 

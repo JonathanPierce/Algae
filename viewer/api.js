@@ -146,6 +146,7 @@ var ViewState = (function() {
 		// Download the corpus data
 		$.get("/getcorpus", function(data) {
 			corpusData = data;
+			clusterDB = {};
 			state.page = "evaluate";
 			state.args = {};
 
@@ -168,8 +169,11 @@ var ViewState = (function() {
 
 						// Flush the data
 						flush();
-					}).fail(function() {
+					}).fail(function(jq,err,ex) {
 						// Something went wrong.
+						console.log("start() error");
+						console.log(err);
+						console.log(ex);
 						state.page = "error";
 						state.args = {};
 						flush();
@@ -401,6 +405,9 @@ var Analyzer = function(index, clusterDB, corpusData, cb) {
 				}
 			}
 			results += "\n";
+
+			// all done
+			cb(results);
 		});
 	});
 

@@ -275,7 +275,7 @@ var responders = {
 
 	                    // Return the JSON
 	                    res.writeHead(200, { 'Content-Type': file_type });
-	                    res.end();
+	                    res.end(data);
 	                } else {
 	                    // 404
 	                    responders["404"](req, res);

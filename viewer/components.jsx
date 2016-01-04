@@ -749,8 +749,12 @@ var Ratings = React.createClass({
 // Export/Save/Reimport button
 var ExportSave = React.createClass({
 	export: function() {
+		var data = this.props.data;
+		var args = data.state.args;
+
 		ViewState.setState("export", {
-			clusters: this.props.clusters
+			clusters: this.props.clusters,
+			assignment: data.corpusData.detectors[args.detector].assignments[args.assignment]
 		});
 	},
 	reimport: function() {
@@ -792,12 +796,13 @@ var ExportSave = React.createClass({
 // Export view
 var ExportPage = React.createClass({
 	getText: function(clusters) {
+		var data = this.props.data;
 		var final = [];
 
 		// Get the cheating clusters
 		for(var i = 0; i < clusters.length; i++) {
 			var cluster = clusters[i];
-			if(cluster.evaluation === 1) {
+			if(data.studentIndex.hasCheating(cluster, data.state.args.assignment)) {
 				final.push(cluster);
 			}
 		}
@@ -835,7 +840,8 @@ var ExportPage = React.createClass({
 		return JSON.stringify(obj, null, 2);
 	},
 	render: function() {
-		var clusters = this.props.data.state.args.clusters;
+		var data = this.props.data;
+		var clusters = data.state.args.clusters;
 
 		var text = this.getText(clusters);
 
