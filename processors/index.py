@@ -176,7 +176,7 @@ def run(students, assignments, args, helpers, weightFun, genKeys):
 		threads.append(t)
 		t.start()
 
-	# wait for all to finis
+	# wait for all to finish
 	for t in threads:
 		t.join()
 

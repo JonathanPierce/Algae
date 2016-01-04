@@ -18,6 +18,91 @@ python algae.py [mode] [jobs] [options]
 
 If you see errors regarding libclang, head over to preprocessors/tokenizer/tokenizer.py and change the hardcoded path to point to the folder containing 'libclang.so'.
 
+### Recommended Use
+
+Our research has shown that Algae's built-in 'Bloom' detector for C/C++ should have the best performance: both in computation time and total cheating caught. It uses an inverted index of token subsequences, identifier names, and literals/comments to find similar code. *Thus, one should be able to get away with only running the Bloom detector in practice.* An example config file for this detector is below:
+
+```json
+{
+	"corpusPath": "../cs233",
+	"jobs": [
+		{
+			"name": "Bloom",
+			"assignments": [
+				{
+					"name": "Lab2",
+					"args": {
+						"files": ["extractMessage.cpp"],
+						"allowPartners": true,
+						"filterFiles": ["extractMessage_cpp_bloom_final.json"]
+					}
+				},
+				{
+					"name": "Lab12",
+					"args": {
+						"files": ["cachesimulator.cpp"],
+						"allowPartners": true,
+						"filterFiles": ["cachesimulator_cpp_bloom_final.json"]
+					}
+				}
+			],
+			"preprocessors": [
+				{
+					"name": "remove_blank",
+					"args": {
+						"sourceStudent": "staff"
+					}
+				},
+				{
+					"name": "literals"
+				},
+				{
+					"name": "simple_tokenize"
+				},
+				{
+					"name": "ident_list"
+				}
+			],
+			"processor": {
+				"name": "bloom",
+				"args": {
+					"resultsSuffix": "bloom_results.csv",
+					"threshold": 0.75
+				}
+			},
+			"postprocessors": [
+				{
+					"name": "percent",
+					"args": {
+						"sourceSuffix": "bloom_results.csv",
+						"resultsSuffix": "bloom_final.json",
+						"percent": 10.0,
+						"top": true,
+						"maxResults": 200,
+						"groupPairs": false
+					}
+				},
+				{
+					"name": "filter_semester",
+					"args": {
+						"semester": "FA15"
+					}
+				}
+			]
+		}
+	]
+}
+```
+
+### Tips and Tricks
+
+Algae works best if:
+
+- All students have a set list of files they are working on. Don't allow students to name their own files or create new ones. (In other words, a single Makefile should work for every student.)
+- A small number of large files works better than a large number of small files. If many small files are necessary, it may be worthwhile to concatenate them beforehand.
+- Run all jobs to successful completion before using the results viewer.
+- I recommend using 64-bit Python on a device with at least 4GB of RAM. Large numbers of students or very long assignments may create memory pressure in some circumstances.
+
 ### Mode
 - “all” - default if none specified - Runs the preprocessors, processor, and postprocessors in order.
 - “preprocess|process|process+post|postprocess” - Runs only the specified lifecycle event. Using these automatically applies the ‘-force’ option.
@@ -133,6 +218,6 @@ Note that you will need node installed for this to work.
 Do not run the results viewer on a computer than can be remotely accessed over HTTP by the general public:
 
 - Student data (in the United States) is protected by a law called FERPA, and making this data publicly available (on purpose or not) constitutes a violation of this law.
-- While the results viewer is running, an attacker can remotely access ANY file on your computer.
+- While the results viewer is running, an attacker can remotely access *ANY* file on your computer.
 
 The more you know *tink*.
