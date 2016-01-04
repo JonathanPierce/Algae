@@ -505,7 +505,7 @@ var ClusterPicker = React.createClass({
 		var data = this.props.data;
 		var args = data.state.args;
 		var studentIndex = data.studentIndex;
-		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+		var assignment = data.state.page === "evaluate" ? data.corpusData.detectors[args.detector].assignments[args.assignment] : null;
 
 		nextIndex = -1;
 		for(var i = currentIndex + 1; i < this.props.clusters.length; i++) {
@@ -536,7 +536,7 @@ var ClusterPicker = React.createClass({
 		var data = this.props.data;
 		var args = data.state.args;
 		var studentIndex = data.studentIndex;
-		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+		var assignment = data.state.page === "evaluate" ? data.corpusData.detectors[args.detector].assignments[args.assignment] : null;;
 		return (
 			<select onChange={this.handleSelectChange} value={current}>
 				{
@@ -696,7 +696,7 @@ var Ratings = React.createClass({
 
 		// Get info from the inverted index
 		var detector = data.corpusData.detectors[args.detector].name;
-		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+		var assignment = data.state.page === "evaluate" ? data.corpusData.detectors[args.detector].assignments[args.assignment] : null;
 		var info = data.studentIndex.queryDetectors(cluster.members, assignment);
 
 		// Render
@@ -724,7 +724,7 @@ var Ratings = React.createClass({
 		var data = this.props.data;
 		var page = data.state.page;
 		var args = data.state.args;
-		var assignment = data.corpusData.detectors[args.detector].assignments[args.assignment];
+		var assignment = data.state.page === "evaluate" ? data.corpusData.detectors[args.detector].assignments[args.assignment] : null;
 
 		var cheatingClass = "cheating";
 		var falsePosClass = "falsePos";
@@ -754,7 +754,7 @@ var ExportSave = React.createClass({
 
 		ViewState.setState("export", {
 			clusters: this.props.clusters,
-			assignment: data.corpusData.detectors[args.detector].assignments[args.assignment]
+			assignment: data.state.page === "evaluate" ? data.corpusData.detectors[args.detector].assignments[args.assignment] : null
 		});
 	},
 	reimport: function() {

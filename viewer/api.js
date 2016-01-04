@@ -54,6 +54,10 @@ var StudentIndex = (function() {
 	var queryDetectors = function(members, assignment) {
 		var detectors = [];
 
+		if(assignment === null) {
+			return [];
+		}
+
 		for(var i = 0; i < members.length; i++) {
 			var student = members[i].student;
 
@@ -88,6 +92,10 @@ var StudentIndex = (function() {
 		}
 
 		if(cluster.evaluation === 2) {
+			return false;
+		}
+
+		if(assignment === null) {
 			return false;
 		}
 
