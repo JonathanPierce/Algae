@@ -2,7 +2,7 @@
 # preprocessor args:
 # - sourceStudent (string): Student (which doesn't have to be in students.txt) containing all blank files.
 # assignment args:
-# - files (string array): Files to compare ot the blank.
+# - files (string array): Files to compare to the blank.
 
 import os
 from lazy import mangle_text
